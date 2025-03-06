@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nikolaj Storm Petersen - Hjem</title>
+    <link rel="icon" href="visuals/favicon.png" type="image/png">
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZG39HWNCCF"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-ZG39HWNCCF');
+    </script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto:wght@400;700&display=swap');
+
+        body {
+            font-family: 'Playfair Display', serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            background-color: #f4e2cf;
+            color: #610000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .logo {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+        }
+
+        .logo img {
+            max-width: 233px;
+            max-height: 80px;
+        }
+
+        .navigation {
+            position: absolute;
+            top: 20px;
+            right: 50px;
+            display: flex;
+            gap: 20px;
+        }
+
+        .navigation a {
+            text-decoration: none;
+            font-weight: bold;
+            color: #610000;
+            font-size: 16px;
+        }
+
+        .navigation a:hover {
+            text-decoration: underline;
+        }
+
+        .hamburger-menu {
+            display: none;
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            cursor: pointer;
+            font-size: 24px;
+            z-index: 1000;
+        }
+
+        .mobile-nav {
+            display: none;
+            position: absolute;
+            top: 60px;
+            right: 20px;
+            background-color: #f4e2cf;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            border-radius: 5px;
+            padding: 10px;
+            z-index: 1000;
+        }
+
+        .mobile-nav a {
+            display: block;
+            text-decoration: none;
+            color: #610000;
+            font-weight: bold;
+            padding: 10px;
+        }
+
+        .container {
+            margin-top: 120px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .services {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .service-box {
+            background: #fff;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+            width: 600px;
+            text-align: left;
+            position: relative;
+        }
+
+        .service-box h3 {
+            font-size: 20px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .service-box ul {
+            padding-left: 20px;
+            list-style-type: disc;
+        }
+
+        .service-box ul li {
+            margin-bottom: 5px;
+            color: #610000;
+        }
+
+        .founder {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .founder:last-child {
+            margin-bottom: 0;
+        }
+
+        .founder-image {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .founder-text {
+            flex: 1;
+        }
+
+        .contact-section {
+            width: 100%;
+            max-width: 800px;
+            background: #ffffff;
+            padding: 20px;
+            margin-top: 40px;
+            border-radius: 8px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .contact-section h2 {
+            margin-bottom: 15px;
+            font-size: 24px;
+        }
+
+        .contact-section p {
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .contact-section a {
+            color: #3E5879;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .contact-section a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .navigation {
+                display: none;
+            }
+            .hamburger-menu {
+                display: block;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="logo">
+        <a href="index.html">
+            <img src="visuals/Logo_1.png" alt="Logo">
+        </a>
+    </div>
+
+    <div class="navigation">
+        <a href="index.html">Hjem</a>
+        <a href="donna.html">Donna</a>
+        <a href="om_os.html">Om os</a>
+    </div>
+
+    <div class="hamburger-menu" onclick="toggleMenu()">☰</div>
+    <div class="mobile-nav" id="mobileNav">
+        <a href="index.html">Hjem</a>
+        <a href="donna.html">Donna</a>
+        <a href="om_os.html">Om os</a>
+    </div>
+
+    <div class="container">
+        <div class="services">
+            <div class="service-box">
+                <h3>Team</h3>
+
+
+                <div class="founder">
+                    <img src="visuals/Nikolaj.png" alt="Nikolaj Storm" class="founder-image">
+                    <div class="founder-text">
+                        <p><strong>Nikolaj Storm - Stifter / Udvikler / Alting</strong></p>
+                        <ul>
+                            <li>Copenhagen Business School - Business Administration and Digital Management</li>
+                            <li>University of San Francisco - International Business</li>
+                            <li>Novo Nordisk - Digitalisering indenfor quality assurance</li>
+                            <li>VAEKST Group - Business Development Consultant</li>
+                        </ul>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="contact-section">
+        <h2>Kontakt os</h2>
+        <p>Hvis du er nysgerrig på donna, eller bare har andre generelle henvendelser, rækker du bare ud :)</p>
+        <p>Email: <a href="mailto:Nikolajstormpetersen@gmail.com">NikolajStormPetersen@gmail.com</a></p>
+        <p>CVR-nr: 41379898</p>
+        <p>Addresse: Andreas Bjørns Gade 26 st tv, 1428 København K</p>
+    </div>
+
+    <script>
+        function toggleMenu() {
+            var menu = document.getElementById("mobileNav");
+            menu.style.display = menu.style.display === "block" ? "none" : "block";
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nikolaj Storm Petersen - Hjem</title>
+    <link rel="icon" href="visuals/favicon.png" type="image/png">
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZG39HWNCCF"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-ZG39HWNCCF');
+    </script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto:wght@400;700&display=swap');
+
+        body {
+            font-family: 'Playfair Display', serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            background-color: #f4e2cf;
+            color: #213555;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .logo {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+        }
+
+        .logo img {
+            max-width: 233px;
+            max-height: 80px;
+        }
+
+        .navigation {
+            position: absolute;
+            top: 20px;
+            right: 50px;
+            display: flex;
+            gap: 20px;
+        }
+
+        .navigation a {
+            text-decoration: none;
+            font-weight: bold;
+            color: #3E5879;
+            font-size: 16px;
+        }
+
+        .navigation a:hover {
+            text-decoration: underline;
+        }
+
+        .hamburger-menu {
+            display: none;
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            cursor: pointer;
+            font-size: 24px;
+            z-index: 1000;
+        }
+
+        .mobile-nav {
+            display: none;
+            position: absolute;
+            top: 60px;
+            right: 20px;
+            background-color: #f4e2cf;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            border-radius: 5px;
+            padding: 10px;
+            z-index: 1000;
+        }
+
+        .mobile-nav a {
+            display: block;
+            text-decoration: none;
+            color: #3E5879;
+            font-weight: bold;
+            padding: 10px;
+        }
+
+        .container {
+            margin-top: 120px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .services {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .service-box {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            text-align: left;
+            position: relative;
+        }
+
+        .service-box img {
+            max-width: 50px;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+
+        .service-box img[alt="Closing Deals"] {
+            max-width: 66px; /* Increased by 1/3 */
+        }
+
+        .service-box h3 {
+            font-size: 20px;
+            margin-top: 50px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .service-box ul {
+            padding-left: 20px;
+            list-style-type: disc;
+        }
+
+        .service-box ul li {
+            margin-bottom: 5px;
+            color: #213555;
+        }
+
+        @media (max-width: 768px) {
+            .navigation {
+                display: none;
+            }
+            .hamburger-menu {
+                display: block;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="logo">
+        <a href="index.html">
+            <img src="visuals/Logo_1.png" alt="Logo">
+        </a>
+    </div>
+    
+    <div class="navigation">
+        <a href="index.html">Home</a>
+        <a href="service.html">Our Services</a>
+        <a href="Lejeberegner.html">About</a>
+        <a href="kontakt.html">Contact</a>
+    </div>
+
+    <!-- Fixed Hamburger Menu -->
+    <div class="hamburger-menu" onclick="toggleMenu()">☰</div>
+    <div class="mobile-nav" id="mobileNav">
+        <a href="index.html">Home</a>
+        <a href="service.html">Our Services</a>
+        <a href="Lejeberegner.html">About</a>
+        <a href="kontakt.html">Contact</a>
+    </div>
+
+    <div class="container">
+        <div class="services">
+            <div class="service-box">
+                <img src="visuals/brain.png" alt="Outbound Sales">
+                <h3>Deep Knowledge Approach</h3>
+                <p>At the beginning of any partnership, we will facilitate a workshop with you in which we seek to understand your product and align with your strategic objectives. Following the workshop, we will do our own independent research.</p>
+                <ul>
+                    <li>Gain product understanding</li>
+                    <li>Align market segmentation criteria</li>
+                    <li>Establish ideal customer profile</li>
+                    <li>Align with strategic objectives and priorities</li>
+                    <li>Define value proposition and USPs</li>
+                </ul>
+            </div>
+            <div class="service-box">
+                <img src="visuals/magnifying.png" alt="Lead Generation">
+                <h3>High-Quality Lead Generation</h3>
+                <p>Based on the market segmentation criteria, ICP, and independent research foregone, we will generate a suitable pool of high quality leads.</p>
+                <ul>
+                    <li>Efficient in-house lead generation processes</li>
+                    <li>Optimized lead qualification processes</li>
+                </ul>
+            </div>
+            <div class="service-box">
+                <img src="visuals/handshake.png" alt="Closing Deals">
+                <h3>Deal Closing</h3>
+                <p>With our value communication approach, we close our nurtured leads, turning them into quality customers.</p>
+                <ul>
+                    <li>Honest communication of value creation -> happy customers -> higher lifetime value</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleMenu() {
+            var menu = document.getElementById("mobileNav");
+            if (menu.style.display === "block") {
+                menu.style.display = "none";
+            } else {
+                menu.style.display = "block";
+            }
+        }
+    </script>
+
+</body>
+</html>
