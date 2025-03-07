@@ -242,7 +242,7 @@
             const userInput = document.getElementById("user-input").value;
             document.getElementById("chat-box").innerHTML += `<p><strong>Bruger:</strong> ${userInput}</p>`;
 
-            const response = await fetch("https://donna-backend-ovby.onrender.com", { 
+        const response = await fetch("https://donna-backend-ovby.onrender.com/chat", { 
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ message: userInput })
