@@ -266,36 +266,47 @@
     </div>
 
     <script>
-    function toggleMenu() {
-        var menu = document.getElementById("mobileNav");
-        menu.style.display = menu.style.display === "block" ? "none" : "block";
-    }
-
-    async function sendMessage() {
-        const userInput = document.getElementById("user-input").value;
-        document.getElementById("chat-box").innerHTML += `<p><strong>Bruger:</strong> ${userInput}</p>`;
-
-        const response = await fetch("https://donna-backend-ovby.onrender.com/chat", { 
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ message: userInput })
+        function toggleMenu() {
+            var menu = document.getElementById("mobileNav");
+            menu.style.display = menu.style.display === "block" ? "none" : "block";
+        }
+    
+        async function sendMessage() {
+            const userInput = document.getElementById("user-input").value.trim();
+            if (userInput === "") return; // Prevent sending empty messages
+    
+            document.getElementById("chat-box").innerHTML += `<p><strong>Bruger:</strong> ${userInput}</p>`;
+    
+            const response = await fetch("https://donna-backend-ovby.onrender.com/chat", { 
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ message: userInput })
+            });
+    
+            const data = await response.json();
+    
+            // Convert AI response from Markdown to HTML before inserting it
+            const formattedResponse = marked.parse(data.response);
+    
+            // Append formatted response to chat box
+            document.getElementById("chat-box").innerHTML += `<p><strong>Donna:</strong> ${formattedResponse}</p>`;
+    
+            // Clear input field
+            document.getElementById("user-input").value = "";
+    
+            // Auto-scroll to latest message
+            document.getElementById("chat-box").scrollTop = document.getElementById("chat-box").scrollHeight;
+        }
+    
+        // Enable sending message by pressing Enter
+        document.getElementById("user-input").addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                event.preventDefault(); // Prevents newline in input field
+                sendMessage();
+            }
         });
-
-        const data = await response.json();
-
-        // Convert AI response from Markdown to HTML before inserting it
-        const formattedResponse = marked.parse(data.response);
-
-        // Append formatted response to chat box
-        document.getElementById("chat-box").innerHTML += `<p><strong>Donna:</strong> ${formattedResponse}</p>`;
-
-        // Clear input field
-        document.getElementById("user-input").value = "";
-
-        // Auto-scroll to latest message
-        document.getElementById("chat-box").scrollTop = document.getElementById("chat-box").scrollHeight;
-    }
-</script>
+    </script>
+    
 
 </body>
 </html>
