@@ -24,12 +24,20 @@
             box-sizing: border-box;
         }
 
+        .auth-overlay {
+            position: fixed;           /* Fikser overlayet i forhold til viewporten */
+            top: 0;
+            left: 0;
+            width: 100vw;              /* Dækker hele bredden */
+            height: 100vh;             /* Dækker hele højden */
+            background: rgba(0, 0, 0, 0.3); /* Halvgennemsigtig baggrund */
+            display: flex;             /* Brug flexbox til centrering */
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;             /* Læg overlayet foran alt andet */
+        }
+
         .auth-container {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 10; /* Sørg for, at den ligger ovenpå de andre */
             max-width: 500px;
             padding: 20px;
             text-align: center;
@@ -37,7 +45,8 @@
             border: 1px solid #ddd;
             border-radius: 8px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-                }
+        }
+
 
 
         body {
@@ -300,6 +309,21 @@
     </style>
 </head>
 <body>
+    <!-- Auth Overlay -->
+    <div class="auth-overlay" id="auth-overlay">
+      <div class="auth-container">
+          <h2>Log ind</h2>
+          <input type="email" id="login-email" placeholder="Email">
+          <input type="password" id="login-password" placeholder="Password">
+          <button onclick="loginUser()">Log ind</button>
+
+          <h3>Opret bruger</h3>
+          <input type="email" id="signup-email" placeholder="Email">
+          <input type="password" id="signup-password" placeholder="Password">
+          <button onclick="signupUser()">Opret bruger</button>
+      </div>
+    </div>
+
     <!-- Logo -->
     <div class="logo">
         <a href="index.html">
@@ -325,18 +349,20 @@
     
     <!-- Content Section -->
     <div class="content-container">
-
-         <!-- Auth Section -->
-    <div class="auth-container">
-        <h2>Log ind</h2>
-        <input type="email" id="login-email" placeholder="Email">
-        <input type="password" id="login-password" placeholder="Password">
-        <button onclick="loginUser()">Log ind</button>
-
-        <h3>Opret bruger</h3>
-        <input type="email" id="signup-email" placeholder="Email">
-        <input type="password" id="signup-password" placeholder="Password">
-        <button onclick="signupUser()">Opret bruger</button>
+        <div class="description-box">
+            <h3>Donna for Professionelle</h3>
+            <p>info. info. info</p>
+            <br>
+            <p><strong>Donna kan tage fejl, du bør derfor verificere vigtig information.</strong></p>
+        </div>
+        <div class="chat-container" id="chat-container" style="display: none;">
+            <h2>Mød Donna</h2>
+            <div id="chat-box"></div>
+            <div class="input-container">
+                <input type="text" id="user-input" placeholder="Spørg Donna...">
+                <button onclick="sendMessage()">Send</button>
+            </div>
+        </div>
     </div>
 
         <!-- donna discription -->
@@ -365,6 +391,8 @@
         async function loginUser() {
             const email = document.getElementById("login-email").value.trim();
             const password = document.getElementById("login-password").value.trim();
+            document.getElementById("auth-overlay").style.display = "none";
+            document.getElementById("chat-container").style.display = "block";
             
             if (!email || !password) {
                 alert("Indtast email og password");
