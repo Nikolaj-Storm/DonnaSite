@@ -139,7 +139,6 @@
             margin-top: 120px; /* Sørger for at chatten starter under logoet */
             flex-wrap: wrap;
         }
-        }
 
         .description-box {
             width: 30%;
@@ -376,8 +375,6 @@
         async function loginUser() {
             const email = document.getElementById("login-email").value.trim();
             const password = document.getElementById("login-password").value.trim();
-            document.getElementById("auth-overlay").style.display = "none";
-            document.getElementById("chat-container").style.display = "block";
             
             if (!email || !password) {
                 alert("Indtast email og password");
