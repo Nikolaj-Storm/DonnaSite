@@ -272,6 +272,7 @@
     }
 
     #loginOverlay .login-box {
+      position: relative;
       background-color: #fff;
       padding: 20px;
       border-radius: 8px;
@@ -299,16 +300,17 @@
 
     /* Styling til knappen til anmodning om kode */
     #requestCode {
-      margin-top: 10px;
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
       padding: 4px 8px; /* Mindre intern margin */
       font-size: 14px;  /* Lidt større tekst */
       font-weight: bold;
       background-color: white;
       color: #610000;
-      border: 1px #610000;
+      border: 1px solid black;
       border-radius: 4px;
       cursor: pointer;
-      display: inline-block;
       text-decoration: none;
     }
 
