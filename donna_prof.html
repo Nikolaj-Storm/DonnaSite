@@ -112,7 +112,7 @@
       width: 80%;
       margin-top: 120px; /* Sørger for at chatten starter under logoet */
       flex-wrap: wrap;
-      position: relative; /* Nødvendigt for overlayets absolutte placering */
+      /* position: relative;  -- ikke nødvendigt, hvis overlay er fixed */
     }
 
     .description-box {
@@ -260,7 +260,8 @@
 
     /* Login overlay styling */
     #loginOverlay {
-      position: absolute;
+      /* Ændret til position: fixed, så det dækker hele vinduet */
+      position: fixed;
       top: 0;
       left: 0;
       width: 100%;
@@ -269,7 +270,7 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      z-index: 10;
+      z-index: 9999; /* Sæt en høj z-index for at være sikker på, at overlayet er øverst */
     }
 
     #loginOverlay .login-box {
@@ -365,7 +366,7 @@
     }
 
     // Definer forudbestemte koder
-    const validCodes = ["kode123", "hemmelig", "adgang"]; // Udskift med dine ønskede koder
+    const validCodes = ["kode123", "hemmelig", "adgang"]; // Ændr til dine koder
 
     // Funktion til at validere login
     function validateLogin() {
@@ -383,20 +384,23 @@
       const userInputField = document.getElementById("user-input");
       const userInput = userInputField.value.trim();
       if (userInput === "") return; // Forhindrer tomme beskeder
+
       userInputField.value = "";
       document.getElementById("chat-box").innerHTML += `
         <div class="message user-message">
           <p>${userInput}</p>
         </div>`;
+
       try {
         const response = await fetch("https://donna-backend-ovby.onrender.com/chat", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ message: userInput })
         });
+
         const data = await response.json();
-        // Konverter Markdown til HTML (hvis marked biblioteket er tilgængeligt)
-        const formattedResponse = marked ? marked.parse(data.response) : data.response;
+        // Hvis "marked" er tilgængeligt, konverter Markdown -> HTML
+        const formattedResponse = (typeof marked !== 'undefined') ? marked.parse(data.response) : data.response;
         document.getElementById("chat-box").innerHTML += `<p>${formattedResponse}</p>`;
         document.getElementById("chat-box").scrollTop = document.getElementById("chat-box").scrollHeight;
       } catch (error) {
