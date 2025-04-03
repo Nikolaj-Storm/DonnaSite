@@ -397,13 +397,25 @@
     // Funktion til at validere login
     function validateLogin() {
       const inputCode = document.getElementById('loginCode').value.trim();
-      const errorMsg = document.getElementById('loginError');
-      if (validCodes.includes(inputCode)) {
-        document.getElementById('loginOverlay').style.display = 'none';
-      } else {
-        errorMsg.style.display = 'block';
-      }
+      fetch('/validate-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: inputCode })
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.valid) {
+            document.getElementById('loginOverlay').style.display = 'none';
+          } else {
+            document.getElementById('loginError').style.display = 'block';
+          }
+        })
+        .catch(err => {
+          console.error('Fejl ved validering af kode:', err);
+          document.getElementById('loginError').style.display = 'block';
+        });
     }
+
 
     // Funktion til at sende besked i chatten
     async function sendMessage() {
