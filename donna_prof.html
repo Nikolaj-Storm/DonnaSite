@@ -305,6 +305,20 @@
         <a href="om_os.html">Om os</a>
     </div>
 
+    <!-- Auth Section -->
+    <div class="auth-container">
+        <h2>Log ind</h2>
+        <input type="email" id="login-email" placeholder="Email">
+        <input type="password" id="login-password" placeholder="Password">
+        <button onclick="loginUser()">Log ind</button>
+
+        <h3>Opret bruger</h3>
+        <input type="email" id="signup-email" placeholder="Email">
+        <input type="password" id="signup-password" placeholder="Password">
+        <button onclick="signupUser()">Opret bruger</button>
+    </div>
+
+    
     <!-- Content Section -->
     <div class="content-container">
         <div class="description-box">
@@ -328,7 +342,67 @@
             var menu = document.getElementById("mobileNav");
             menu.style.display = menu.style.display === "block" ? "none" : "block";
         }
-    
+
+         // Eksempel på login-funktion
+        async function loginUser() {
+            const email = document.getElementById("login-email").value.trim();
+            const password = document.getElementById("login-password").value.trim();
+            
+            if (!email || !password) {
+                alert("Indtast email og password");
+                return;
+            }
+             try {
+                const response = await fetch("https://donna-backend-ovby.onrender.com/login", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await response.json();
+                
+                if (response.ok) {
+                    alert(data.message);
+                    // Vis chat-containeren efter succesfuld login
+                    document.getElementById("chat-container").style.display = "block";
+                    // Skjul auth-sektionen, hvis du ønsker det:
+                    document.querySelector(".auth-container").style.display = "none";
+                } else {
+                    alert(data.error);
+                }
+            } catch (error) {
+                console.error("Error:", error);
+            }
+        }
+         // Eksempel på signup-funktion
+        async function signupUser() {
+            const email = document.getElementById("signup-email").value.trim();
+            const password = document.getElementById("signup-password").value.trim();
+            
+            if (!email || !password) {
+                alert("Indtast email og password");
+                return;
+            }
+            
+            try {
+                const response = await fetch("https://donna-backend-ovby.onrender.com/signup", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await response.json();
+                
+                if (response.ok) {
+                    alert(data.message);
+                } else {
+                    alert(data.error);
+                }
+            } catch (error) {
+                console.error("Error:", error);
+            }
+        }
+        
+            
+        
         async function sendMessage() {
             const userInputField = document.getElementById("user-input");
             const userInput = userInputField.value.trim();
