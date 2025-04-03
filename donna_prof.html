@@ -394,11 +394,12 @@
     // Funktion til at validere login
     function validateLogin() {
       const inputCode = document.getElementById('loginCode').value.trim();
-      fetch('/validate-code', {
+      fetch('https://hmly-ovby.onrender.com/validate-code', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code: inputCode })
       })
+
         .then(res => res.json())
         .then(data => {
           if (data.valid) {
