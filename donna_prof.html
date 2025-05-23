@@ -392,27 +392,34 @@
     }
 
     // Funktion til at validere login
-    function validateLogin() {
-      const inputCode = document.getElementById('loginCode').value.trim();
-      fetch('https://hmly-ovby.onrender.com/validate-code', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code: inputCode })
-      })
+   function validateLogin() {
+  const inputCode = document.getElementById('loginCode').value.trim();
 
-        .then(res => res.json())
-        .then(data => {
-          if (data.valid) {
-            document.getElementById('loginOverlay').style.display = 'none';
-          } else {
-            document.getElementById('loginError').style.display = 'block';
-          }
-        })
-        .catch(err => {
-          console.error('Fejl ved validering af kode:', err);
-          document.getElementById('loginError').style.display = 'block';
-        });
-    }
+  // Local override for special password
+  if (inputCode === 'hemmelig') {
+    document.getElementById('loginOverlay').style.display = 'none';
+    return;
+  }
+
+  fetch('https://hmly-ovby.onrender.com/validate-code', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ code: inputCode })
+  })
+    .then(res => res.json())
+    .then(data => {
+      if (data.valid) {
+        document.getElementById('loginOverlay').style.display = 'none';
+      } else {
+        document.getElementById('loginError').style.display = 'block';
+      }
+    })
+    .catch(err => {
+      console.error('Fejl ved validering af kode:', err);
+      document.getElementById('loginError').style.display = 'block';
+    });
+}
+
 
 
     // Funktion til at sende besked i chatten
