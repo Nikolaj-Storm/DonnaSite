@@ -433,7 +433,7 @@
           <p>${userInput}</p>
         </div>`;
       try {
-        const response = await fetch("https://donna-backend-ovby.onrender.com/chat", {
+        const response = await fetch("https://prof-backend.onrender.com/chat", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ message: userInput })
