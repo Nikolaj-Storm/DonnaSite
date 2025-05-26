@@ -429,12 +429,6 @@ let messageHistory = [];
       // 🧠 Tilføj AI'ens svar til chat-historikken
       messageHistory.push({ role: "assistant", content: data.response });
 
-
-      marked.setOptions({
-        breaks: true,
-        gfm: true
-      });
-      
       // Vis AI'ens svar i chatten (markdown-renderet hvis muligt)
       const formattedResponse = (typeof marked !== 'undefined') ? marked.parse(data.response) : data.response;
       document.getElementById("chat-box").innerHTML += `
