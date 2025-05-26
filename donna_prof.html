@@ -398,11 +398,11 @@ let messageHistory = [];
     messageHistory.push({ role: "user", content: userInput });
 
     // Vis brugerens besked i chatten
-    document.getElementById("chat-box").innerHTML += 
+     document.getElementById("chat-box").innerHTML += `
       <div class="message user-message">
         <p>${userInput}</p>
-      </div>;
-    userInputField.value = "";
+      </div>`;
+
 
     try {
       const response = await fetch("https://prof-backend.onrender.com/chat", {
@@ -422,10 +422,11 @@ let messageHistory = [];
 
       // Vis AI'ens svar i chatten (markdown-renderet hvis muligt)
       const formattedResponse = (typeof marked !== 'undefined') ? marked.parse(data.response) : data.response;
-      document.getElementById("chat-box").innerHTML += 
-        <div class="message donna-message">
-          <p>${formattedResponse}</p>
-        </div>;
+        document.getElementById("chat-box").innerHTML += `
+          <div class="message donna-message">
+            <p>${formattedResponse}</p>
+          </div>`;
+
       document.getElementById("chat-box").scrollTop = document.getElementById("chat-box").scrollHeight;
 
     } catch (error) {
