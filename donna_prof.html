@@ -1,4 +1,4 @@
-  <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -14,16 +14,9 @@
     gtag('js', new Date());
     gtag('config', 'G-ZG39HWNCCF');
   </script>
-
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto:wght@400;700&display=swap');
-
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: 'Playfair Display', serif;
       background-color: #f4e2cf;
@@ -32,22 +25,8 @@
       flex-direction: column;
       align-items: center;
     }
-
-    .logo {
-      position: absolute;
-      top: 20px;
-      left: 20px;
-      z-index: 100;
-    }
-
-    .logo img {
-      width: auto;
-      max-width: 233px;
-      height: auto;
-      max-height: 80px;
-      transition: transform 0.3s ease;
-    }
-
+    .logo { position: absolute; top: 20px; left: 20px; z-index: 100; }
+    .logo img { width: auto; max-width: 233px; height: auto; max-height: 80px; transition: transform 0.3s ease; }
     .navigation {
       position: absolute;
       top: 20px;
@@ -56,25 +35,13 @@
       gap: 20px;
       z-index: 100;
     }
-
     .navigation a {
       text-decoration: none;
       font-weight: bold;
       color: #610000;
       font-size: 16px;
     }
-
-    .hamburger-menu {
-      display: none;
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      cursor: pointer;
-      font-size: 24px;
-      color: #610000;
-      z-index: 100;
-    }
-
+    .hamburger-menu { display: none; position: absolute; top: 20px; right: 20px; cursor: pointer; font-size: 24px; color: #610000; z-index: 100; }
     .mobile-nav {
       display: none;
       position: absolute;
@@ -86,7 +53,6 @@
       padding: 10px;
       z-index: 100;
     }
-
     .mobile-nav a {
       display: block;
       text-decoration: none;
@@ -94,27 +60,20 @@
       font-weight: bold;
       padding: 10px;
     }
-
     @media (max-width: 768px) {
-      .navigation {
-        display: none;
-      }
-      .hamburger-menu {
-        display: block;
-      }
+      .navigation { display: none; }
+      .hamburger-menu { display: block; }
     }
-
     .content-container {
-      position: relative; /* Tilføjet: gør containeren til reference for absolut positionerede elementer */
+      position: relative;
       display: flex;
       justify-content: center;
       align-items: flex-start;
       gap: 20px;
       width: 80%;
-      margin-top: 120px; /* Sørger for at chatten starter under logoet */
+      margin-top: 120px;
       flex-wrap: wrap;
     }
-
     .description-box {
       width: 30%;
       background: white;
@@ -126,7 +85,6 @@
       flex-direction: column;
       justify-content: flex-start;
     }
-
     .chat-container {
       flex-grow: 1;
       background: white;
@@ -139,7 +97,6 @@
       justify-content: center;
       width: 65%;
     }
-
     #chat-box {
       border: 1px solid #ddd;
       padding: 15px;
@@ -151,45 +108,35 @@
       white-space: pre-wrap;
       word-wrap: break-word;
     }
-
-    #chat-box p {
-      margin-bottom: 5px;
-      line-height: 1.4;
-    }
-
-    #chat-box h1, #chat-box h2, #chat-box h3 {
-      color: #610000;
-      margin-top: 15px;
-    }
-
-    #chat-box ul {
-      margin-left: 20px;
-      list-style-type: disc;
-    }
-
-    #chat-box a {
-      color: #007bff;
-      text-decoration: none;
-    }
-
-    #chat-box a:hover {
-      text-decoration: underline;
-    }
-
+    #chat-box p { margin-bottom: 5px; line-height: 1.4; }
+    #chat-box h1, #chat-box h2, #chat-box h3 { color: #610000; margin-top: 15px; }
+    #chat-box ul { margin-left: 20px; list-style-type: disc; }
+    #chat-box a { color: #007bff; text-decoration: none; }
+    #chat-box a:hover { text-decoration: underline; }
     .input-container {
       display: flex;
       justify-content: center;
       gap: 10px;
       margin-top: 10px;
     }
-
-    input {
+    .input-wrapper {
+      position: relative;
       flex-grow: 1;
-      padding: 12px;
+    }
+    #user-input { width: 100%; padding: 12px; border: 1px solid #610000; border-radius: 8px; }
+    #namespace-selector {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      width: 100%;
+      margin-top: 4px;
+      padding: 10px;
       border: 1px solid #610000;
       border-radius: 8px;
+      background-color: #fff;
+      display: none;
+      z-index: 10;
     }
-
     button {
       padding: 12px;
       background: #610000;
@@ -198,40 +145,9 @@
       cursor: pointer;
       border-radius: 8px;
     }
-
-    button:hover {
-      background: #3E5879;
-    }
-
-    @media (max-width: 900px) {
-      .content-container {
-        flex-direction: column;
-        align-items: center;
-        margin-top: 100px;
-      }
-      .description-box {
-        width: 80%;
-        order: 2;
-      }
-      .chat-container {
-        width: 100%;
-        order: 1;
-      }
-    }
-
-    /* Chat message styling */
-    .message {
-      display: flex;
-      margin: 8px 0;
-      max-width: 100%;
-    }
-
-    .user-message {
-      display: flex;
-      justify-content: flex-end;
-      width: 100%;
-    }
-
+    button:hover { background: #3E5879; }
+    .message { display: flex; margin: 8px 0; max-width: 100%; }
+    .user-message { display: flex; justify-content: flex-end; width: 100%; }
     .user-message p {
       background-color: #f4e2cf;
       color: #610000;
@@ -244,22 +160,18 @@
       align-self: flex-end;
       margin-right: 0;
     }
-
     .donna-message {
       display: block;
       background-color: #fff;
       color: #610000;
       padding: 10px 15px;
       border-radius: 16px;
-      width: 100%;  /* ← nu bruger svaret hele bredden */
+      width: 100%;
       box-sizing: border-box;
       word-wrap: break-word;
       font-size: 16px;
       text-align: left;
     }
-
-
-
     .donna-message p {
       background-color: #fff;
       color: #610000;
@@ -389,94 +301,74 @@
       <h2>Mød Donna</h2>
       <div id="chat-box"></div>
       <div class="input-container">
-        <button onclick="clearChat()" style="margin-top: 10px;">🔄 Ryd samtale</button>
-
-        <select id="namespace-selector" style="display: none; padding: 12px; border-radius: 8px; border: 1px solid #610000;">
-          <option value="all" selected>🔍 Alle områder</option>
-          <option value="Basic">📘 Skattelovgivning</option>
-          <option value="justits.BASICS">⚖️ Justitsministeriet</option>
-        </select>
-        
-        <input type="text" id="user-input" placeholder="Spørg Donna...">
-        <button onclick="sendMessage()">Send</button>
-      </div>
-    </div>
+  <button onclick="clearChat()" style="margin-top: 10px;">🔄 Ryd samtale</button>
+  <div class="input-wrapper">
+    <input type="text" id="user-input" placeholder="Spørg Donna...">
+    <select id="namespace-selector">
+      <option value="all" selected>🔍 Alle områder</option>
+      <option value="Basic">📘 Skattelovgivning</option>
+      <option value="justits.BASICS">⚖️ Justitsministeriet</option>
+    </select>
   </div>
+  <button onclick="sendMessage()">Send</button>
+</div>
 
-  <script>
-    // Funktion til at sende besked i chatten
+<script>
 let messageHistory = [];
 
 async function sendMessage() {
   const userInputField = document.getElementById("user-input");
   const userInput = userInputField.value.trim();
   if (userInput === "") return;
-
-  // 🧠 Tilføj brugerens besked til chat-historikken
   messageHistory.push({ role: "user", content: userInput });
-
-  // Vis brugerens besked i chatten
   document.getElementById("chat-box").innerHTML += `
     <div class="message user-message">
       <p>${userInput}</p>
     </div>`;
   userInputField.value = "";
-
   try {
-      const response = await fetch("https://prof-backend.onrender.com/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          messages: messageHistory,
-          namespace: document.getElementById("namespace-selector").value
-        })
-      });
-
+    const response = await fetch("https://prof-backend.onrender.com/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        messages: messageHistory,
+        namespace: document.getElementById("namespace-selector").value
+      })
+    });
     const data = await response.json();
-
     if (data.error) throw new Error(data.error);
-
     messageHistory.push({ role: "assistant", content: data.response });
-
     marked.setOptions({ breaks: true, gfm: true });
     const formattedResponse = (typeof marked !== 'undefined') ? marked.parse(data.response) : data.response;
-
     document.getElementById("chat-box").innerHTML += `
       <div class="message donna-message">
-        <p>${formattedResponse}
+        <p>${formattedResponse}</p>
       </div>`;
     document.getElementById("chat-box").scrollTop = document.getElementById("chat-box").scrollHeight;
-
   } catch (error) {
     console.error("Error:", error);
   }
 }
 
+document.getElementById("user-input").addEventListener("keypress", function(event) {
+  if (event.key === "Enter") {
+    event.preventDefault();
+    sendMessage();
+  }
+});
 
-  // Send med Enter-tast
-  document.getElementById("user-input").addEventListener("keypress", function(event) {
-    if (event.key === "Enter") {
-      event.preventDefault();
-      sendMessage();
-      }
-    });
+let namespaceDropdownShown = false;
+document.getElementById("user-input").addEventListener("focus", function() {
+  if (!namespaceDropdownShown) {
+    document.getElementById("namespace-selector").style.display = "block";
+    namespaceDropdownShown = true;
+  }
+});
 
-    // 👇 ADD THIS RIGHT HERE
-    let namespaceDropdownShown = false;
-
-    document.getElementById("user-input").addEventListener("focus", function() {
-      if (!namespaceDropdownShown) {
-        document.getElementById("namespace-selector").style.display = "inline-block";
-        namespaceDropdownShown = true;
-      }
-    });
-
-
-    function clearChat() {
-    messageHistory = [];
-    document.getElementById("chat-box").innerHTML = "";
-    }
-
+function clearChat() {
+  messageHistory = [];
+  document.getElementById("chat-box").innerHTML = "";
+}
 
     
     // Toggle mobil-menu
