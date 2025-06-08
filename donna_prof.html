@@ -170,6 +170,14 @@
       cursor: pointer;
       border-radius: 8px;
     }
+    .trash-icon {
+      max-width: 55%;
+      max-height: 55%;
+      object-fit: contain;
+      display: block;
+      margin: auto;
+    }
+
     
     button:hover { background: #3E5879; }
     .message { display: flex; margin: 8px 0; max-width: 100%; }
@@ -328,7 +336,7 @@
       <div id="chat-box"></div>
      <div class="input-container">
   <button onclick="clearChat()" class="chat-btn" aria-label="Ryd samtale">
-  <img src="visuals/trash.png" alt="Ryd samtale" style="height: 24px; width: 24px;">
+    <img src="visuals/trash.png" alt="Ryd samtale" class="trash-icon">
   </button>
 
   <div class="input-wrapper">
