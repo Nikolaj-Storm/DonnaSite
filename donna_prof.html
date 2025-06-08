@@ -118,6 +118,16 @@
       justify-content: center;
       gap: 10px;
       margin-top: 10px;
+      align-items: center;
+    }
+    .chat-btn {
+      height: 48px;
+      padding: 0 16px;
+      background: #610000;
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 8px;
     }
     .input-wrapper {
       position: relative;
@@ -309,8 +319,8 @@
     <div class="chat-container">
       <h2>Mød Donna</h2>
       <div id="chat-box"></div>
-      <div class="input-container">
-  <button onclick="clearChat()" style="margin-top: 10px;">🔄 Ryd samtale</button>
+     <div class="input-container">
+  <button onclick="clearChat()" class="chat-btn">🔄 Ryd samtale</button>
   <div class="input-wrapper">
     <input type="text" id="user-input" placeholder="Spørg Donna...">
     <select id="namespace-selector">
@@ -319,9 +329,9 @@
       <option value="justits.BASICS">⚖️ Justitsministeriet</option>
     </select>
   </div>
-  <button onclick="sendMessage()">Send</button>
+  <button onclick="sendMessage()" class="chat-btn">Send</button>
 </div>
-
+      
 <script>
 let messageHistory = [];
 
