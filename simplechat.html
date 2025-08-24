@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Donna</title>
+    <link rel="icon" href="visuals/favicon.png" type="image/png">
+    
+    
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZG39HWNCCF"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-ZG39HWNCCF');
+    </script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto:wght@400;700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Playfair Display', serif;
+            background-color: #f4e2cf;
+            color: #610000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .logo {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 100;
+        }
+
+        .logo img {
+            width: auto;
+            max-width: 233px;
+            height: auto;
+            max-height: 80px;
+            transition: transform 0.3s ease;
+        }
+
+        .navigation {
+            position: absolute;
+            top: 20px;
+            right: 50px;
+            display: flex;
+            gap: 20px;
+            z-index: 100;
+        }
+
+        .navigation a {
+            text-decoration: none;
+            font-weight: bold;
+            color: #610000;
+            font-size: 16px;
+        }
+
+        .hamburger-menu {
+            display: none;
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            cursor: pointer;
+            font-size: 24px;
+            color: #610000;
+            z-index: 100;
+        }
+
+        .mobile-nav {
+            display: none;
+            position: absolute;
+            top: 60px;
+            right: 20px;
+            background-color: #f4e2cf;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            border-radius: 5px;
+            padding: 10px;
+            z-index: 100;
+        }
+
+        .mobile-nav a {
+            display: block;
+            text-decoration: none;
+            color: #610000;
+            font-weight: bold;
+            padding: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .navigation {
+                display: none;
+            }
+            .hamburger-menu {
+                display: block;
+            }
+        }
+
+        .content-container {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 20px;
+            width: 80%;
+            margin-top: 120px; /* Sørger for at chatten starter under logoet */
+            flex-wrap: wrap;
+        }
+
+        .description-box {
+            width: 30%;
+            background: white;
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1);
+            text-align: left;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+        }
+
+        .chat-container {
+            flex-grow: 1;
+            background: white;
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            width: 65%;
+        }
+
+        #chat-box {
+    border: 1px solid #ddd;
+    padding: 15px;
+    height: 300px;
+    overflow-y: auto;
+    text-align: left;
+    border-radius: 8px;
+    background-color: #fff;
+
+    /* NEW ADDITIONS */
+    white-space: pre-wrap; /* Ensures line breaks work */
+    word-wrap: break-word;  /* Prevents overflow issues */
+}
+
+#chat-box p {
+    margin-bottom: 5px; /* Reducer afstanden mellem afsnit */
+    line-height: 1.4; /* Justerer linjeafstand for bedre læsbarhed */
+}
+
+
+#chat-box h1, #chat-box h2, #chat-box h3 {
+    color: #610000;
+    margin-top: 15px;
+}
+
+#chat-box ul {
+    margin-left: 20px;
+    list-style-type: disc;
+}
+
+#chat-box a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+#chat-box a:hover {
+    text-decoration: underline;
+}
+
+
+        .input-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        input {
+            flex-grow: 1;
+            padding: 12px;
+            border: 1px solid #610000;
+            border-radius: 8px;
+        }
+
+        button {
+            padding: 12px;
+            background: #610000;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 8px;
+        }
+
+        button:hover {
+            background: #3E5879;
+        }
+
+        /* Når skærmen bliver mindre, rykker beskrivelsesboksen under chatten */
+        @media (max-width: 900px) {
+            .content-container {
+                flex-direction: column;
+                align-items: center;
+                margin-top: 100px;
+            }
+            .description-box {
+                width: 80%;
+                order: 2;
+            }
+            .chat-container {
+                width: 100%;
+                order: 1;
+            }
+        }
+        /* Chat message styling */
+.message {
+    display: flex;
+    margin: 8px 0;
+    max-width: 100%;
+}
+
+/* User message container */
+.user-message {
+    display: flex;
+    justify-content: flex-end; /* Align the message to the right */
+    width: 100%; /* Ensure full width to push content to the right */
+}
+
+/* User message bubble */
+.user-message p {
+    background-color: #f4e2cf; /* Theme color */
+    color: #610000;
+    padding: 12px 18px;
+    border-radius: 18px;
+    max-width: 60%;
+    word-wrap: break-word;
+    font-size: 16px;
+    text-align: left;
+    align-self: flex-end; /* Push bubble to the right within the flexbox */
+    margin-right: 0; /* Ensure no extra spacing */
+}
+
+
+/* Style for Donna's messages */
+    .donna-message {
+        justify-content: flex-start; /* Align Donna's messages to the left */
+    }
+
+.donna-message p {
+    background-color: #fff; /* White background for Donna's messages */
+    color: #610000;
+    padding: 10px 15px;
+    border-radius: 16px;
+    max-width: 60%;
+    word-wrap: break-word;
+}
+
+/* Ensure chat-box stays scrollable */
+#chat-box {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start; /* Align messages by default */
+    border: 1px solid #ddd;
+    padding: 15px;
+    height: 300px;
+    overflow-y: auto;
+    text-align: left;
+    border-radius: 8px;
+    background-color: #fff;
+}
+
+    </style>
+</head>
+<body>
+    <!-- Logo -->
+    <div class="logo">
+        <a href="index.html">
+            <img src="visuals/Logo_1.png" alt="Logo">
+        </a>
+    </div>
+
+    <!-- Navigation -->
+    <div class="navigation">
+        <a href="index.html">Hjem</a>
+        <a href="donna.html">Donna</a>
+        <a href="om_os.html">Om os</a>
+    </div>
+
+    <div class="hamburger-menu" onclick="toggleMenu()">☰</div>
+    <div class="mobile-nav" id="mobileNav">
+        <a href="index.html">Hjem</a>
+        <a href="donna.html">Donna</a>
+        <a href="om_os.html">Om os</a>
+    </div>
+
+    <!-- Content Section -->
+    <div class="content-container">
+        <div class="description-box">
+            <h3>Om Donna</h3>
+
+<p>
+  Donna's maskinrum er under udvikling.<br>
+  Første svar vil derfor tage omkring 3 minutter, imens følgende spørgsmål vil tage få sekunder.
+</p>
+<br>
+
+<p>
+Det her er bare et eksperiment, og SVAR KAN REELT IKKE BRUGES TIL NOGET. DE KAN VÆRE MEGET FORKERTE.
+</p>
+<br>
+    <strong>Donna er under udvikling, ingen svar bør tages som juridisk vejledning</strong>
+</p>
+
+    
+        </div>
+        <div class="chat-container">
+            <h2>Mød Donna</h2>
+            <div id="chat-box"></div>
+            <div class="input-container">
+                <input type="text" id="user-input" placeholder="Spørg Donna...">
+                <button onclick="sendMessage()">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleMenu() {
+            var menu = document.getElementById("mobileNav");
+            menu.style.display = menu.style.display === "block" ? "none" : "block";
+        }
+    
+        async function sendMessage() {
+            const userInputField = document.getElementById("user-input");
+            const userInput = userInputField.value.trim();
+            
+            if (userInput === "") return; // Prevent sending empty messages
+    
+            // Clear input field immediately after capturing the message
+            userInputField.value = "";
+    
+            document.getElementById("chat-box").innerHTML += `
+    <div class="message user-message">
+        <p>${userInput}</p>
+    </div>`;
+
+    
+            try {
+                const response = await fetch("https://donna-backend-ovby.onrender.com/chat", { 
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ message: userInput })
+                });
+    
+                const data = await response.json();
+    
+                // Convert AI response from Markdown to HTML before inserting it
+                const formattedResponse = marked.parse(data.response);
+    
+                // Append formatted response to chat box
+                document.getElementById("chat-box").innerHTML += `<p></strong> ${formattedResponse}</p>`;
+    
+                // Auto-scroll to latest message
+                document.getElementById("chat-box").scrollTop = document.getElementById("chat-box").scrollHeight;
+            } catch (error) {
+                console.error("Error:", error);
+            }
+        }
+    
+        // Enable sending message by pressing Enter
+        document.getElementById("user-input").addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                event.preventDefault(); // Prevents newline in input field
+                sendMessage();
+            }
+        });
+    </script>    
+
+</body>
+</html>
