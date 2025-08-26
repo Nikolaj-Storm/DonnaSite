@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Donna for Professionelle</title>
+  <title>Business Donna</title>
   <link rel="icon" href="visuals/favicon.png" type="image/png">
   
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
@@ -333,7 +333,7 @@
     </p>
     <br>
     <p>
-      Med Google's- og OpenAI's førende AI-modeller og en stadig voksende og omfattende database, er Donna i stand vejlede indenfor en bred vifte af emner indenfor jura.<br>
+      Med Google's- og OpenAI's førende AI-modeller og en stadig voksende og omfattende database, er Donna i stand vejlede indenfor en bred vifte af emner realeteret til forretning<br>
     </p>
       <br>
       <p><strong>Donna kan tage fejl, du bør derfor verificere vigtig information.</strong></p>
@@ -349,11 +349,8 @@
   <div class="input-wrapper">
     <input type="text" id="user-input" placeholder="Spørg Donna...">
     <select id="namespace-selector">
-      <option value="all" selected>🔍 Alle områder (mindre præcist til specifikke spørgsmål)</option>
-      <option value="Basic">💸 Skattelovgivning</option>
-      <option value="social.BASICS">🏠 Social- & Boligministeriet</option>
-      <option value="Justits.BASICS">⚖️ Justitsministeriet</option>
-      <option value="uddannelse.BASICS">🧑‍🏫 Uddannelse- & Forskningsministeriet</option>
+      <option value="Q" selected>🎙️ Founders Podcast (all episodes)</option>
+      <!-- Add more if you have other namespaces, e.g., <option value="other">Specific Topic</option> -->
     </select>
   </div>
   <button onclick="sendMessage()" class="chat-btn" aria-label="Send">
@@ -375,7 +372,7 @@ async function sendMessage() {
     </div>`;
   userInputField.value = "";
   try {
-    const response = await fetch("https://founders-backend.onrender.com", {
+    const response = await fetch("//prof-backend.onrender.com/chat", {", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
