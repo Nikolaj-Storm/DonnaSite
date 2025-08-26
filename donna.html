@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -160,7 +160,6 @@
       display: none;
       z-index: 10;
     }
-
     button {
       height: 48px;
       padding: 0 20px;
@@ -177,8 +176,6 @@
       display: block;
       margin: auto;
     }
-
-    
     button:hover { background: #3E5879; }
     .message { display: flex; margin: 8px 0; max-width: 100%; }
     .user-message { display: flex; justify-content: flex-end; width: 100%; }
@@ -214,8 +211,6 @@
       max-width: 90%;
       word-wrap: break-word;
     }
-
-    /* Login overlay styling */
     #loginOverlay {
       position: absolute;
       top: 0;
@@ -228,8 +223,6 @@
       align-items: center;
       z-index: 9999;
     }
-
-
     #loginOverlay .login-box {
       position: relative;
       background-color: #fff;
@@ -239,7 +232,6 @@
       text-align: center;
       width: 300px;
     }
-
     #loginOverlay input {
       padding: 10px;
       margin-bottom: 10px;
@@ -247,7 +239,6 @@
       border: 1px solid #610000;
       border-radius: 4px;
     }
-
     #loginOverlay button {
       padding: 10px 20px;
       background-color: #610000;
@@ -256,8 +247,6 @@
       border-radius: 4px;
       cursor: pointer;
     }
-
-    /* Styling til knappen til anmodning om kode */
     #requestCode {
       position: absolute;
       bottom: 0;
@@ -273,13 +262,6 @@
       cursor: pointer;
       text-decoration: none;
     }
-
-
-
-
-
-
-
     #loginError {
       color: red;
       margin-top: 10px;
@@ -297,18 +279,18 @@
 
   <!-- Navigation -->
   <div class="navigation">
-    <a href="index.html">Home</a>
+    <a href="index.html">Hjem</a>
     <a href="donna.html">Business Donna</a>
     <a href="donna_prof.html">Legal Donna</a>
-    <a href="om_os.html">About</a>
+    <a href="om_os.html">Om os</a>
   </div>
 
   <div class="hamburger-menu" onclick="toggleMenu()">☰</div>
   <div class="mobile-nav" id="mobileNav">
-    <a href="index.html">Home</a>
+    <a href="index.html">Hjem</a>
     <a href="donna.html">Business Donna</a>
     <a href="donna_prof.html">Legal Donna</a>
-    <a href="om_os.html">About</a>
+    <a href="om_os.html">Om os</a>
   </div>
 
   <!-- Content Section -->
@@ -319,138 +301,106 @@
         <h2>Indtast adgangskode</h2>
         <input type="text" id="loginCode" placeholder="Adgangskode">
         <button onclick="validateLogin()">Log ind</button>
-        <!-- Anmod om kode-knap: Brug et mailto-link -->
         <a id="requestCode" href="mailto:nikolajstormpetersen@gmail.com?subject=Kodeanmodning&body=Jeg%20kunne%20godt%20t%C3%A6nke%20mig%20en%20kode">Få kode</a>
         <p id="loginError">Forkert kode, prøv igen!</p>
       </div>
     </div>
 
     <div class="description-box">
-      <h3>Donna for Professionelle</h3>
-      <p>
-      Donna's maskinrum er under udvikling.<br>
-      Første svar vil derfor tage omkring 1 minut, imens følgende spørgsmål vil tage få sekunder.
-    </p>
-    <br>
-    <p>
-      Med Google's- og OpenAI's førende AI-modeller og en stadig voksende og omfattende database, er Donna i stand vejlede indenfor en bred vifte af emner realeteret til forretning<br>
-    </p>
-      <br>
-      <p><strong>Donna kan tage fejl, du bør derfor verificere vigtig information.</strong></p>
+      <h3>Nikolaj: Business Advisor</h3>
+      <p>Powered by insights from the Founders podcast on history's greatest entrepreneurs (e.g., Rockefeller, Jobs). First response may take ~1 min due to Render's free tier.</p><br>
+      <p>Advice is AI-generated from transcripts—verify critical details.</p>
     </div>
     <div class="chat-container">
-      <h2>Mød Donna</h2>
+      <h2>Ask Nikolaj</h2>
       <div id="chat-box"></div>
-     <div class="input-container">
-  <button onclick="clearChat()" class="chat-btn" aria-label="Ryd samtale">
-    <img src="visuals/trash.png" alt="Ryd samtale" class="trash-icon">
-  </button>
-
-  <div class="input-wrapper">
-    <input type="text" id="user-input" placeholder="Spørg Donna...">
-    <select id="namespace-selector">
-      <option value="Q" selected>🎙️ Founders Podcast (all episodes)</option>
-      <!-- Add more if you have other namespaces, e.g., <option value="other">Specific Topic</option> -->
-    </select>
+      <div class="input-container">
+        <button onclick="clearChat()" class="chat-btn" aria-label="Ryd samtale">
+          <img src="visuals/trash.png" alt="Ryd samtale" class="trash-icon">
+        </button>
+        <div class="input-wrapper">
+          <input type="text" id="user-input" placeholder="Ask about business advice...">
+          <select id="namespace-selector">
+            <option value="Q" selected>🎙️ Founders Podcast (all episodes)</option>
+          </select>
+        </div>
+        <button onclick="sendMessage()" class="chat-btn" aria-label="Send">
+          <img src="visuals/send.png" alt="Send besked" class="send-icon">
+        </button>
+      </div>
+    </div>
   </div>
-  <button onclick="sendMessage()" class="chat-btn" aria-label="Send">
-  <img src="visuals/send.png" alt="Send besked" class="send-icon">
-  </button>
-</div>
-      
-<script>
-let messageHistory = [];
+  
+  <script>
+    let messageHistory = [];
 
-async function sendMessage() {
-  const userInputField = document.getElementById("user-input");
-  const userInput = userInputField.value.trim();
-  if (userInput === "") return;
-  messageHistory.push({ role: "user", content: userInput });
-  document.getElementById("chat-box").innerHTML += `
-    <div class="message user-message">
-      <p>${userInput}</p>
-    </div>`;
-  userInputField.value = "";
-  try {
-    const response = await fetch("https://founders-backend.onrender.com/chat", {", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        messages: messageHistory,
-        namespace: document.getElementById("namespace-selector").value
-      })
+    async function sendMessage() {
+      const userInputField = document.getElementById("user-input");
+      const userInput = userInputField.value.trim();
+      if (userInput === "") return;
+      messageHistory.push({ role: "user", content: userInput });
+      document.getElementById("chat-box").innerHTML += `
+        <div class="message user-message">
+          <p>${userInput}</p>
+        </div>`;
+      userInputField.value = "";
+      try {
+        const response = await fetch("https://prof-backend.onrender.com/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            messages: messageHistory,
+            namespace: document.getElementById("namespace-selector").value
+          })
+        });
+        const data = await response.json();
+        if (data.error) throw new Error(data.error);
+        messageHistory.push({ role: "assistant", content: data.response });
+        marked.setOptions({ breaks: true, gfm: true });
+        const formattedResponse = (typeof marked !== 'undefined') ? marked.parse(data.response) : data.response;
+        document.getElementById("chat-box").innerHTML += `
+          <div class="message donna-message">
+            <p>${formattedResponse}</p>
+          </div>`;
+        document.getElementById("chat-box").scrollTop = document.getElementById("chat-box").scrollHeight;
+      } catch (error) {
+        console.error("Error:", error);
+      }
+    }
+
+    document.getElementById("user-input").addEventListener("keypress", function(event) {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        sendMessage();
+      }
     });
-    const data = await response.json();
-    if (data.error) throw new Error(data.error);
-    messageHistory.push({ role: "assistant", content: data.response });
-    marked.setOptions({ breaks: true, gfm: true });
-    const formattedResponse = (typeof marked !== 'undefined') ? marked.parse(data.response) : data.response;
-    document.getElementById("chat-box").innerHTML += `
-      <div class="message donna-message">
-        <p>${formattedResponse}</p>
-      </div>`;
-    document.getElementById("chat-box").scrollTop = document.getElementById("chat-box").scrollHeight;
-  } catch (error) {
-    console.error("Error:", error);
-  }
-}
 
-document.getElementById("user-input").addEventListener("keypress", function(event) {
-  if (event.key === "Enter") {
-    event.preventDefault();
-    sendMessage();
-  }
-});
+    let namespaceDropdownShown = false;
+    document.getElementById("user-input").addEventListener("focus", function() {
+      if (!namespaceDropdownShown) {
+        document.getElementById("namespace-selector").style.display = "block";
+        namespaceDropdownShown = true;
+      }
+    });
 
-let namespaceDropdownShown = false;
-document.getElementById("user-input").addEventListener("focus", function() {
-  if (!namespaceDropdownShown) {
-    document.getElementById("namespace-selector").style.display = "block";
-    namespaceDropdownShown = true;
-  }
-});
+    function clearChat() {
+      messageHistory = [];
+      document.getElementById("chat-box").innerHTML = "";
+    }
 
-function clearChat() {
-  messageHistory = [];
-  document.getElementById("chat-box").innerHTML = "";
-}
-
-    
-    // Toggle mobil-menu
     function toggleMenu() {
       var menu = document.getElementById("mobileNav");
       menu.style.display = menu.style.display === "block" ? "none" : "block";
     }
 
-    // Funktion til at validere login
-   function validateLogin() {
-  const inputCode = document.getElementById('loginCode').value.trim();
-
-  // Local override for special password
-  if (inputCode === 'hemmelig') {
-    document.getElementById('loginOverlay').style.display = 'none';
-    return;
-  }
-
-  fetch('https://hmly-ovby.onrender.com/validate-code', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ code: inputCode })
-  })
-    .then(res => res.json())
-    .then(data => {
-      if (data.valid) {
+    function validateLogin() {
+      const inputCode = document.getElementById('loginCode').value.trim();
+      if (inputCode === 'hemmelig') {
         document.getElementById('loginOverlay').style.display = 'none';
       } else {
         document.getElementById('loginError').style.display = 'block';
       }
-    })
-    .catch(err => {
-      console.error('Fejl ved validering af kode:', err);
-      document.getElementById('loginError').style.display = 'block';
-    });
-}
-
+    }
   </script>
 </body>
 </html>
