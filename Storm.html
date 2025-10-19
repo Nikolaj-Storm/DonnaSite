@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Business Donna</title>
+  <link rel="icon" href="visuals/favicon.png" type="image/png">
+  <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZG39HWNCCF"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-ZG39HWNCCF');
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto:wght@400;700&display=swap');
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Playfair Display', serif;
+      background-color: #f4e2cf;
+      color: #610000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .logo { position: absolute; top: 20px; left: 20px; z-index: 100; }
+    .logo img { width: auto; max-width: 233px; height: auto; max-height: 80px; transition: transform 0.3s ease; }
+    .navigation { position: absolute; top: 20px; right: 50px; display: flex; gap: 20px; z-index: 100; }
+    .navigation a { text-decoration: none; font-weight: bold; color: #610000; font-size: 16px; }
+    .hamburger-menu { display: none; position: absolute; top: 20px; right: 20px; cursor: pointer; font-size: 24px; color: #610000; z-index: 100; }
+    .mobile-nav { display: none; position: absolute; top: 60px; right: 20px; background-color: #f4e2cf; box-shadow: 0 2px 5px rgba(0,0,0,0.1); border-radius: 5px; padding: 10px; z-index: 100; }
+    .mobile-nav a { display: block; text-decoration: none; color: #610000; font-weight: bold; padding: 10px; }
+    @media (max-width: 768px) { .navigation { display: none; } .hamburger-menu { display: block; } }
+    .content-container { position: relative; display: flex; justify-content: center; align-items: flex-start; gap: 20px; width: 80%; margin-top: 120px; flex-wrap: wrap; }
+    .description-box { width: 30%; background: white; padding: 20px; border-radius: 16px; box-shadow: 0px 4px 15px rgba(0,0,0,0.1); text-align: left; display: flex; flex-direction: column; justify-content: flex-start; }
+    .chat-container { flex-grow: 1; background: white; padding: 20px; border-radius: 16px; box-shadow: 0px 4px 15px rgba(0,0,0,0.1); text-align: center; display: flex; flex-direction: column; justify-content: center; width: 65%; }
+    #chat-box { border: 1px solid #ddd; padding: 15px; height: 300px; overflow-y: auto; text-align: left; border-radius: 8px; background-color: #fff; white-space: pre-wrap; word-wrap: break-word; }
+    #chat-box p { margin-bottom: 5px; line-height: 1.4; }
+    #chat-box h1, #chat-box h2, #chat-box h3 { color: #610000; margin-top: 15px; }
+    #chat-box ul { margin-left: 20px; list-style-type: disc; }
+    #chat-box a { color: #007bff; text-decoration: none; }
+    #chat-box a:hover { text-decoration: underline; }
+    .input-container { display: flex; justify-content: center; gap: 10px; margin-top: 10px; align-items: center; }
+    .chat-btn { height: 48px; padding: 0 20px; background: #610000; color: white; border: none; cursor: pointer; border-radius: 8px; }
+    .chat-btn img { max-width: 60%; max-height: 60%; object-fit: contain; display: block; margin: auto; }
+    .input-wrapper { position: relative; flex-grow: 1; }
+    #user-input { width: 100%; height: 48px; padding: 0 12px; border: 1px solid #610000; border-radius: 8px; }
+    #namespace-selector { position: absolute; top: 100%; left: 0; width: 100%; margin-top: 4px; padding: 10px; border: 1px solid #610000; border-radius: 8px; background-color: #fff; display: none; z-index: 10; }
+    button { height: 48px; padding: 0 20px; background: #610000; color: white; border: none; cursor: pointer; border-radius: 8px; }
+    .trash-icon { max-width: 55%; max-height: 55%; object-fit: contain; display: block; margin: auto; }
+    button:hover { background: #3E5879; }
+    .message { display: flex; margin: 8px 0; max-width: 100%; }
+    .user-message { display: flex; justify-content: flex-end; width: 100%; }
+    .user-message p { background-color: #f4e2cf; color: #610000; padding: 12px 18px; border-radius: 18px; max-width: 60%; word-wrap: break-word; font-size: 16px; text-align: left; align-self: flex-end; margin-right: 0; }
+    .donna-message { display: block; background-color: #fff; color: #610000; padding: 10px 15px; border-radius: 16px; width: 100%; box-sizing: border-box; word-wrap: break-word; font-size: 16px; text-align: left; }
+    .donna-message p { background-color: #fff; color: #610000; padding: 10px 15px; border-radius: 16px; max-width: 90%; word-wrap: break-word; }
+    #loginOverlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(244, 226, 207, 0.95); display: flex; justify-content: center; align-items: center; z-index: 9999; }
+    #loginOverlay .login-box { position: relative; background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0px 4px 15px rgba(0,0,0,0.1); text-align: center; width: 300px; }
+    #loginOverlay input { padding: 10px; margin-bottom: 10px; width: 100%; border: 1px solid #610000; border-radius: 4px; }
+    #loginOverlay button { padding: 10px 20px; background-color: #610000; color: white; border: none; border-radius: 4px; cursor: pointer; }
+    #requestCode { position: absolute; bottom: 0; right: 0; padding: 4px 8px; font-size: 14px; font-weight: bold; font-family: sans-serif; background-color: white; color: #610000; border: 1px solid #610000; border-radius: 4px; cursor: pointer; text-decoration: none; }
+    #loginError { color: red; margin-top: 10px; display: none; }
+    .mic-icon { width: 24px; height: 24px; background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23610000"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm-1-9c0-.55.45-1 1-1s1 .45 1 1v6c0 .55-.45 1-1 1s-1-.45-1-1V5zm6 6c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>') no-repeat center; }
+    .mic-active .mic-icon { background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23FF0000"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm-1-9c0-.55.45-1 1-1s1 .45 1 1v6c0 .55-.45 1-1 1s-1-.45-1-1V5zm6 6c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>'); }
+  </style>
+</head>
+<body>
+  <div class="logo"><a href="index.html"><img src="visuals/Logo_1.png" alt="Logo"></a></div>
+  <div class="navigation"><a href="index.html">Hjem</a><a href="donna.html">Business Donna</a><a href="donna_prof.html">Legal Donna</a><a href="om_os.html">Om os</a></div>
+  <div class="hamburger-menu" onclick="toggleMenu()">☰</div>
+  <div class="mobile-nav" id="mobileNav"><a href="index.html">Hjem</a><a href="donna.html">Business Donna</a><a href="donna_prof.html">Legal Donna</a><a href="om_os.html">Om os</a></div>
+  <div class="content-container">
+    <div id="loginOverlay">
+      <div class="login-box">
+        <h2>Indtast adgangskode</h2>
+        <input type="text" id="loginCode" placeholder="Adgangskode">
+        <button onclick="validateLogin()">Log ind</button>
+        <a id="requestCode" href="mailto:nikolajstormpetersen@gmail.com?subject=Kodeanmodning&body=Jeg%20kunne%20godt%20t%C3%A6nke%20mig%20en%20kode">Få kode</a>
+        <p id="loginError">Forkert kode, prøv igen!</p>
+      </div>
+    </div>
+    <div class="description-box">
+      <h3>Nikolaj: Business Advisor</h3>
+      <p>Powered by insights from the Founders podcast on history's greatest entrepreneurs (e.g., Rockefeller, Jobs). First response may take ~1 min due to Render's free tier.</p><br>
+      <p>Advice is AI-generated from transcripts—verify critical details.</p>
+    </div>
+    <div class="chat-container">
+      <h2>Ask Nikolaj</h2>
+      <div id="chat-box"></div>
+      <div class="input-container">
+        <button onclick="clearChat()" class="chat-btn" aria-label="Ryd samtale"><img src="visuals/trash.png" alt="Ryd samtale" class="trash-icon"></button>
+        <div class="input-wrapper">
+          <input type="text" id="user-input" placeholder="Ask about business advice...">
+          <select id="namespace-selector"><option value="Q" selected>🎙️ Founders Podcast (all episodes)</option></select>
+        </div>
+        <button onclick="sendMessage()" class="chat-btn" aria-label="Send"><img src="visuals/send.png" alt="Send besked" class="send-icon"></button>
+        <button id="micBtn" class="chat-btn" aria-label="Toggle Mic"><span class="mic-icon"></span></button>
+      </div>
+    </div>
+  </div>
+  <script>
+    let messageHistory = [];
+    const socket = io('https://founders-backend.onrender.com');
+    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    recognition.continuous = true;
+    recognition.interimResults = false;
+    recognition.lang = 'en-US'; // Change to 'da-DK' for Danish if needed
+
+    recognition.onresult = (event) => {
+      const speech = event.results[event.results.length - 1][0].transcript;
+      if (speech.toLowerCase().includes('stop listening')) {
+        recognition.stop();
+        document.getElementById('micBtn').classList.remove('mic-active');
+        return;
+      }
+      messageHistory.push({ role: "user", content: speech });
+      socket.emit('message', { messages: messageHistory, namespace: 'Q' });
+      document.getElementById("chat-box").innerHTML += `<div class="message user-message"><p>${speech}</p></div>`;
+      document.getElementById("chat-box").scrollTop = document.getElementById("chat-box").scrollHeight;
+    };
+
+    recognition.onerror = (event) => console.error('Speech error:', event.error);
+
+    socket.on('response', (data) => {
+      messageHistory.push({ role: "assistant", content: data.response });
+      const formattedResponse = marked.parse(data.response);
+      document.getElementById("chat-box").innerHTML += `<div class="message donna-message"><p>${formattedResponse}</p></div>`;
+      const utterance = new SpeechSynthesisUtterance(data.response);
+      utterance.lang = 'en-US'; // Or 'da-DK'
+      window.speechSynthesis.speak(utterance);
+      document.getElementById("chat-box").scrollTop = document.getElementById("chat-box").scrollHeight;
+    });
+
+    document.getElementById("user-input").addEventListener("keypress", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        sendMessage();
+      }
+    });
+
+    let namespaceDropdownShown = false;
+    document.getElementById("user-input").addEventListener("focus", () => {
+      if (!namespaceDropdownShown) {
+        document.getElementById("namespace-selector").style.display = "block";
+        namespaceDropdownShown = true;
+      }
+    });
+
+    function sendMessage() {
+      const userInput = document.getElementById("user-input").value.trim();
+      if (userInput === "") return;
+      messageHistory.push({ role: "user", content: userInput });
+      document.getElementById("chat-box").innerHTML += `<div class="message user-message"><p>${userInput}</p></div>`;
+      document.getElementById("user-input").value = "";
+      socket.emit('message', { messages: messageHistory, namespace: document.getElementById("namespace-selector").value });
+    }
+
+    function clearChat() {
+      messageHistory = [];
+      document.getElementById("chat-box").innerHTML = "";
+    }
+
+    function toggleMenu() {
+      var menu = document.getElementById("mobileNav");
+      menu.style.display = menu.style.display === "block" ? "none" : "block";
+    }
+
+    function validateLogin() {
+      const inputCode = document.getElementById('loginCode').value.trim();
+      if (inputCode === 'hemmelig') {
+        document.getElementById('loginOverlay').style.display = 'none';
+      } else {
+        document.getElementById('loginError').style.display = 'block';
+      }
+    }
+
+    document.getElementById('micBtn').addEventListener('click', () => {
+      if (recognition.state === 'listening') {
+        recognition.stop();
+        document.getElementById('micBtn').classList.remove('mic-active');
+      } else {
+        recognition.start();
+        document.getElementById('micBtn').classList.add('mic-active');
+      }
+    });
+  </script>
+</body>
+</html>
