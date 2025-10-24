@@ -187,11 +187,14 @@
     async function loadHistory() {
       const response = await fetch('/history');
       const chats = await response.json();
+      if (chats.length === 0) {
+        loadChat(1);
+      }
       const historyDiv = document.getElementById('chat-history');
       historyDiv.innerHTML = chats.map(chat => `<button onclick="loadChat(${chat.id})">${chat.title || `Chat ${chat.id}`}</button>`).join('<br>');
     }
     async function loadChat(chatId) {
-      const response = await fetch(`/chat?chat_id=${chatId}`);
+      const response = await fetch(`/chat/${chatId}`);
       const messages = await response.json();
       messageHistory = messages;
       document.getElementById("chat-box").innerHTML = messages.map(m => `<div class="message ${m.role}-message"><p>${m.content}</p></div>`).join('');
