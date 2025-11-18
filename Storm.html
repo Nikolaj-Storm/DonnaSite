@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="da">
 <head>
@@ -836,7 +835,7 @@
             // 2. APP INITIALIZATION
             // =================================================================
             function initializeApp() {
-                // Connect to Socket.IO server from old frontend
+                // Connect to Socket.IO server
                 const SOCKET_URL = "https://storm-backend-wqd0.onrender.com";
                 try {
                     socket = io(SOCKET_URL);
@@ -853,17 +852,15 @@
                         const assistantMessage = { role: "assistant", content: data.response };
                         messageHistory.push(assistantMessage);
                         renderMessage(assistantMessage);
-                        speakText(data.response); // Auto-playback
+                        speakText(data.response);
                     });
 
                     socket.on('connect', () => {
                         console.log('Connected to socket server.');
-                        addSystemMessage("Tilsluttet.");
                     });
 
                     socket.on('disconnect', () => {
                         console.log('Disconnected from socket server.');
-                        addSystemMessage("Forbindelse afbrudt.");
                     });
                 }
 
@@ -880,16 +877,15 @@
                 historyToggle.addEventListener('click', toggleHistoryPanel);
                 sidebarOverlay.addEventListener('click', () => historyPanel.classList.add('hidden'));
 
-                // Clear Chat
-                clearBtn.addEventListener('click', clearChat);
-
-                // File Upload
+                // File Upload (both desktop and mobile)
                 uploadBtn.addEventListener('click', () => fileInput.click());
+                uploadBtnMobile.addEventListener('click', () => fileInput.click());
                 fileInput.addEventListener('change', handleFileUpload);
 
-                // Voice
+                // Voice (both desktop and mobile)
                 setupSpeechRecognition();
                 micBtn.addEventListener('click', toggleSpeechRecognition);
+                micBtnMobile.addEventListener('click', toggleSpeechRecognition);
 
                 // Load Initial Data
                 loadChatHistory();
@@ -995,12 +991,6 @@
                 messageList.scrollTop = messageList.scrollHeight;
             }
 
-            function clearChat() {
-                messageHistory = [];
-                messageList.innerHTML = "";
-                addSystemMessage("Chat ryddet.");
-            }
-
             // =================================================================
             // 4. VOICE FEATURES
             // =================================================================
@@ -1009,14 +999,16 @@
                 if (!SpeechRecognition) {
                     console.error("Speech Recognition API is not supported in this browser.");
                     micBtn.disabled = true;
-                    micBtn.title = "Voice not supported in this browser";
+                    micBtnMobile.disabled = true;
+                    micBtn.title = "Voice not supported";
+                    micBtnMobile.title = "Voice not supported";
                     return;
                 }
 
                 recognition = new SpeechRecognition();
                 recognition.continuous = true;
                 recognition.interimResults = false;
-                recognition.lang = 'en-US'; // Change to 'da-DK' for Danish
+                recognition.lang = 'en-US';
 
                 recognition.onresult = (event) => {
                     const speech = event.results[event.results.length - 1][0].transcript;
@@ -1025,6 +1017,7 @@
                     if (speech.toLowerCase().includes('stop listening')) {
                         recognition.stop();
                         micBtn.classList.remove('active');
+                        micBtnMobile.classList.remove('active');
                         isListening = false;
                         return;
                     }
@@ -1043,13 +1036,13 @@
 
                 recognition.onend = () => {
                     if (isListening) {
-                        // Restart if still supposed to be listening
                         try {
                             recognition.start();
                         } catch (err) {
                             console.log("Recognition restart failed:", err);
                             isListening = false;
                             micBtn.classList.remove('active');
+                            micBtnMobile.classList.remove('active');
                         }
                     }
                 };
@@ -1059,6 +1052,7 @@
                     if (event.error !== 'no-speech' && event.error !== 'aborted') {
                         isListening = false;
                         micBtn.classList.remove('active');
+                        micBtnMobile.classList.remove('active');
                         addSystemMessage("Talegenkendelse fejl: " + event.error);
                     }
                 };
@@ -1068,18 +1062,16 @@
                 if (!recognition) return;
 
                 if (isListening) {
-                    // Stop listening
                     recognition.stop();
                     isListening = false;
                     micBtn.classList.remove('active');
-                    micBtn.title = "Start Listening";
+                    micBtnMobile.classList.remove('active');
                 } else {
-                    // Start listening
                     try {
                         recognition.start();
                         isListening = true;
                         micBtn.classList.add('active');
-                        micBtn.title = "Stop Listening (or say 'stop listening')";
+                        micBtnMobile.classList.add('active');
                     } catch (err) {
                         console.error("Error starting recognition:", err);
                         addSystemMessage("Kunne ikke starte talegenkendelse.");
@@ -1088,10 +1080,8 @@
             }
 
             function speakText(text) {
-                // Stop any previous speech
                 synthesis.cancel();
 
-                // Clean text for speech (remove code blocks and markdown)
                 const cleanText = text
                     .replace(/```[\s\S]*?```/g, "kodeblok.")
                     .replace(/\*\*/g, '')
@@ -1099,9 +1089,8 @@
                     .replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1');
                 
                 const utterance = new SpeechSynthesisUtterance(cleanText);
-                utterance.lang = 'en-US'; // Change to 'da-DK' for Danish
+                utterance.lang = 'en-US';
                 
-                // Find appropriate voice if available
                 const voices = synthesis.getVoices();
                 const preferredVoice = voices.find(voice => voice.lang === 'en-US');
                 if (preferredVoice) {
@@ -1111,7 +1100,6 @@
                 synthesis.speak(utterance);
             }
             
-            // Load voices when ready
             if (synthesis.onvoiceschanged !== undefined) {
                 synthesis.onvoiceschanged = () => {
                     console.log("Speech synthesis voices loaded.");
@@ -1129,7 +1117,6 @@
                 for (let file of files) {
                     console.log("File uploaded:", file.name, file.type);
 
-                    // For text-based files, read content
                     if (file.type.startsWith('text/') || file.type === 'application/json') {
                         const reader = new FileReader();
                         reader.onload = (e) => {
@@ -1149,7 +1136,6 @@
                         };
                         reader.readAsText(file);
                     } else {
-                        // Handle non-text files (just state the file name)
                         const messageText = `Uploaded file: ${file.name} (Type: ${file.type})`;
                         const userMessage = { role: 'user', content: messageText };
                         messageHistory.push(userMessage);
@@ -1164,7 +1150,6 @@
                     }
                 }
                 
-                // Reset file input
                 fileInput.value = null;
             }
             
@@ -1176,47 +1161,59 @@
                 historyPanel.classList.toggle('hidden');
             }
 
-            function loadChatHistory() {
-                // Load chat history from server (simulated here)
-                // In production, this would fetch from your backend
-                
-                // Clear existing history
-                chatHistoryList.innerHTML = '';
-                
-                // For now, just show a placeholder
-                const placeholderLi = document.createElement('li');
-                placeholderLi.textContent = 'Ny chat';
-                placeholderLi.classList.add('active');
-                placeholderLi.addEventListener('click', () => {
-                    clearChat();
-                    addSystemMessage("Ny chat startet.");
-                });
-                chatHistoryList.appendChild(placeholderLi);
-                
-                // You can add actual history loading here
-                // Example implementation from old frontend:
-                /*
-                fetch('/history')
-                    .then(response => response.json())
-                    .then(chats => {
-                        chatHistoryList.innerHTML = '';
-                        chats.forEach(chat => {
+            async function loadChatHistory() {
+                try {
+                    const response = await fetch('https://storm-backend-wqd0.onrender.com/history');
+                    const chats = await response.json();
+                    
+                    chatHistoryList.innerHTML = '';
+                    
+                    if (chats.length === 0) {
+                        // Create a default chat if none exist
+                        const placeholderLi = document.createElement('li');
+                        placeholderLi.textContent = 'Ny chat';
+                        placeholderLi.classList.add('active');
+                        placeholderLi.dataset.chatId = '1';
+                        placeholderLi.addEventListener('click', () => {
+                            loadChat(1);
+                        });
+                        chatHistoryList.appendChild(placeholderLi);
+                        currentChatId = 1;
+                    } else {
+                        // Populate chat history
+                        chats.forEach((chat, index) => {
                             const li = document.createElement('li');
                             li.textContent = chat.title || `Chat ${chat.id}`;
                             li.dataset.chatId = chat.id;
                             li.addEventListener('click', () => loadChat(chat.id));
+                            
+                            // Mark first chat as active
+                            if (index === 0) {
+                                li.classList.add('active');
+                            }
+                            
                             chatHistoryList.appendChild(li);
                         });
                         
+                        // Auto-load first chat
                         if (chats.length > 0) {
                             loadChat(chats[0].id);
                         }
-                    })
-                    .catch(err => console.error('Failed to load chat history:', err));
-                */
+                    }
+                } catch (err) {
+                    console.error('Failed to load chat history:', err);
+                    // Fallback to single default chat
+                    const placeholderLi = document.createElement('li');
+                    placeholderLi.textContent = 'Chat 1';
+                    placeholderLi.classList.add('active');
+                    placeholderLi.dataset.chatId = '1';
+                    placeholderLi.addEventListener('click', () => loadChat(1));
+                    chatHistoryList.appendChild(placeholderLi);
+                    currentChatId = 1;
+                }
             }
 
-            function loadChat(chatId) {
+            async function loadChat(chatId) {
                 console.log(`Loading chat ${chatId}...`);
                 
                 // Update active state
@@ -1227,17 +1224,18 @@
                 // Clear current chat
                 messageList.innerHTML = '';
                 messageHistory = [];
+                currentChatId = chatId;
                 
-                // Example implementation:
-                /*
-                fetch(`/chat/${chatId}`)
-                    .then(response => response.json())
-                    .then(messages => {
-                        messageHistory = messages;
-                        messages.forEach(msg => renderMessage(msg));
-                    })
-                    .catch(err => console.error('Failed to load chat:', err));
-                */
+                try {
+                    const response = await fetch(`https://storm-backend-wqd0.onrender.com/chat/${chatId}`);
+                    const messages = await response.json();
+                    
+                    messageHistory = messages;
+                    messages.forEach(msg => renderMessage(msg));
+                } catch (err) {
+                    console.error('Failed to load chat:', err);
+                    addSystemMessage(`Chat ${chatId} loaded (empty)`);
+                }
                 
                 // Hide sidebar on mobile after selection
                 if (window.innerWidth <= 768) {
