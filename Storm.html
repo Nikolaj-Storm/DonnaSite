@@ -1,9 +1,19 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="da">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Chat Interface</title>
+    <title>Storm</title>
+    <link rel="icon" href="visuals/favicon.png" type="image/png">
+    
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZG39HWNCCF"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-ZG39HWNCCF');
+    </script>
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -11,12 +21,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Fira+Code:wght@500&display=swap" rel="stylesheet">
 
     <!-- Libraries -->
-    <!-- Note: Using specific versions as requested or reasonable defaults -->
     <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     
     <!-- Prism.js for syntax highlighting -->
-    <!-- We embed the CSS theme directly to keep it to one file -->
     <style>
         /* Prism.js Tomorrow Night Theme */
         code[class*="language-"],
@@ -43,7 +51,7 @@
             padding: 1em;
             margin: .5em 0;
             overflow: auto;
-            border-radius: 0.5rem; /* Rounded corners for code blocks */
+            border-radius: 0.5rem;
         }
         :not(pre) > code[class*="language-"] {
             padding: .1em;
@@ -113,7 +121,6 @@
             color: green;
         }
     </style>
-    <!-- Prism.js Core & Components -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
 
@@ -144,7 +151,6 @@
         }
 
         body {
-            /* Animated gradient background for the "liquid" feel */
             background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
             background-size: 400% 400%;
             animation: gradientBG 15s ease infinite;
@@ -156,7 +162,6 @@
             100% { background-position: 0% 50%; }
         }
 
-        /* Glassmorphism Utility Class */
         .glass {
             background: var(--glass-bg);
             backdrop-filter: blur(10px);
@@ -166,7 +171,7 @@
             box-shadow: var(--shadow);
         }
 
-        /* --- Login Overlay --- */
+        /* Login Overlay */
         #login-overlay {
             position: fixed;
             inset: 0;
@@ -185,6 +190,7 @@
             width: 100%;
             max-width: 350px;
             text-align: center;
+            position: relative;
         }
         
         #login-form h2 {
@@ -200,13 +206,13 @@
             border: 1px solid rgba(255, 255, 255, 0.5);
             background: var(--input-bg);
             font-size: 1rem;
-            color: #fff;
+            color: #333;
             outline: none;
             transition: all 0.2s ease;
         }
 
         #login-form input::placeholder {
-            color: rgba(255, 255, 255, 0.7);
+            color: rgba(0, 0, 0, 0.5);
         }
 
         #login-form input:focus {
@@ -241,16 +247,36 @@
             display: block;
         }
 
-        /* --- Main App Container --- */
+        #request-code {
+            position: absolute;
+            bottom: 0.5rem;
+            right: 0.5rem;
+            padding: 0.4rem 0.8rem;
+            font-size: 0.85rem;
+            font-weight: bold;
+            background-color: white;
+            color: #e73c7e;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 0.4rem;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        #request-code:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Main App Container */
         #app-container {
-            display: none; /* Hidden by default */
+            display: none;
             height: 100vh;
             width: 100vw;
-            display: flex;
             padding: 1.5rem;
         }
 
-        /* --- History Panel (Left Sidebar) --- */
+        /* History Panel */
         #history-panel {
             width: 280px;
             height: 100%;
@@ -298,7 +324,6 @@
             color: #fff;
         }
 
-        /* Collapsed state for history panel */
         #history-panel.hidden {
             width: 0;
             margin-right: 0;
@@ -306,23 +331,21 @@
             opacity: 0;
         }
 
-        /* --- Chat Container (Main Area) --- */
+        /* Chat Container */
         #chat-container {
             flex-grow: 1;
             height: 100%;
             display: flex;
             flex-direction: column;
-            overflow: hidden; /* Important for glass effect */
+            overflow: hidden;
         }
 
-        /* Header Bar */
         #chat-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
             padding: 0.75rem 1.5rem;
             flex-shrink: 0;
-            border-bottom: 0; /* Removed border, glass is enough */
         }
 
         #history-toggle {
@@ -345,16 +368,15 @@
         #history-toggle svg {
             width: 24px;
             height: 24px;
-            stroke: #fff;
+            stroke: #333;
         }
 
         #chat-topic {
-            color: #fff;
+            color: #333;
             font-size: 1.1rem;
             font-weight: 500;
         }
 
-        /* Namespace Selector (in header) */
         #namespace-select {
             padding: 0.5rem 0.75rem;
             border-radius: 0.5rem;
@@ -363,6 +385,7 @@
             color: var(--text-color);
             font-size: 0.9rem;
             outline: none;
+            cursor: pointer;
         }
 
         /* Message List */
@@ -399,7 +422,6 @@
             -webkit-backdrop-filter: blur(5px);
         }
 
-        /* Message Content Styling */
         .assistant-message p:not(:last-child) {
             margin-bottom: 1em;
         }
@@ -412,7 +434,6 @@
         }
 
         .assistant-message pre {
-            /* Make code blocks stand out */
             background: rgba(0, 0, 0, 0.7) !important;
             border-radius: 0.5rem;
             margin: 1rem 0;
@@ -432,7 +453,6 @@
             border: 1px solid rgba(0, 0, 0, 0.1);
             border-radius: 0.5rem;
             overflow: hidden;
-            position: relative;
         }
 
         .html-iframe-header {
@@ -446,7 +466,7 @@
         
         .html-iframe {
             width: 100%;
-            height: 300px; /* Default height, can be resized */
+            height: 300px;
             border: none;
             background: #fff;
             resize: vertical;
@@ -459,16 +479,15 @@
             gap: 0.75rem;
             padding: 1.5rem;
             flex-shrink: 0;
-            align-items: flex-end; /* Align items to bottom for textareas */
+            align-items: flex-end;
         }
         
-        /* Glass base for the input bar */
         .input-bar-glass {
             display: flex;
             flex-grow: 1;
             align-items: center;
             padding: 0.5rem 0.75rem;
-            min-height: 54px; /* Fixed height for consistency */
+            min-height: 54px;
         }
 
         #message-input {
@@ -479,23 +498,22 @@
             font-size: 1rem;
             color: var(--text-color);
             padding: 0.5rem;
-            resize: none; /* Allow manual resize if we change to textarea */
+            resize: none;
             max-height: 150px;
             overflow-y: auto;
         }
         
         #message-input::placeholder {
-            color: #444;
+            color: #666;
         }
 
-        /* Buttons: Mic & Upload */
         .icon-button {
             display: flex;
             align-items: center;
             justify-content: center;
             width: 48px;
             height: 48px;
-            border-radius: 50%; /* Circle buttons */
+            border-radius: 50%;
             border: var(--glass-border);
             background: var(--input-bg);
             cursor: pointer;
@@ -509,13 +527,11 @@
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
 
-        .icon-button svg {
+        .icon-button svg, .icon-button img {
             width: 24px;
             height: 24px;
-            stroke: #333;
         }
 
-        /* Mic Button Active State */
         #mic-btn.active {
             background: #e63946;
             animation: pulse-animation 1.5s infinite;
@@ -530,12 +546,18 @@
             100% { box-shadow: 0 0 0 15px rgba(230, 57, 70, 0); }
         }
 
-        /* Hidden file input */
         #file-input {
             display: none;
         }
 
-        /* Scrollbar styling */
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+            100% { transform: translateX(0); }
+        }
+
         ::-webkit-scrollbar {
             width: 8px;
         }
@@ -554,7 +576,6 @@
         /* Mobile Responsiveness */
         @media (max-width: 768px) {
             body {
-                /* On mobile, the URL bar can be weird, fix height */
                 height: -webkit-fill-available;
             }
             #app-container {
@@ -581,12 +602,11 @@
             
             #history-panel.hidden {
                 transform: translateX(-100%);
-                width: 280px; /* Keep width for slide-out animation */
+                width: 280px;
                 padding: 1rem;
                 opacity: 1;
             }
             
-            /* Overlay for mobile sidebar */
             #sidebar-overlay {
                 display: none;
                 position: fixed;
@@ -602,7 +622,7 @@
             #chat-container {
                 width: 100%;
                 height: 100%;
-                border-radius: var(--border-radius); /* Keep the glass effect */
+                border-radius: var(--border-radius);
             }
             
             #chat-header {
@@ -627,25 +647,25 @@
                 height: 44px;
             }
         }
-
     </style>
 </head>
 <body>
 
-    <!-- 1. Authentication Overlay -->
+    <!-- Authentication Overlay -->
     <div id="login-overlay">
         <form id="login-form" class="glass">
-            <h2>Velkommen</h2>
-            <input type="password" id="password-input" placeholder="Adgangskode">
+            <h2>Indtast adgangskode</h2>
+            <input type="text" id="password-input" placeholder="Adgangskode" autocomplete="off">
             <span id="login-error"></span>
             <button type="submit">Log ind</button>
+            <a id="request-code" href="mailto:nikolajstormpetersen@gmail.com?subject=Kodeanmodning&body=Jeg%20kunne%20godt%20t%C3%A6nke%20mig%20en%20kode">Få kode</a>
         </form>
     </div>
 
-    <!-- 2. Main Application -->
-    <div id="app-container" style="display: none;"> <!-- Initially hidden -->
+    <!-- Main Application -->
+    <div id="app-container" style="display: none;">
         
-        <!-- 2a. Chat History Panel -->
+        <!-- Chat History Panel -->
         <aside id="history-panel" class="glass hidden">
             <h3>Chat Historik</h3>
             <ul id="chat-history-list">
@@ -656,25 +676,22 @@
         <!-- Mobile overlay for sidebar -->
         <div id="sidebar-overlay"></div>
 
-        <!-- 2b. Main Chat Container -->
+        <!-- Main Chat Container -->
         <main id="chat-container" class="glass">
             
             <!-- Chat Header -->
-            <header id="chat-header" class="glass">
+            <header id="chat-header">
                 <button id="history-toggle" title="Toggle Chat History">
-                    <!-- Menu Icon SVG -->
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
                     </svg>
                 </button>
                 
-                <span id="chat-topic">General</span>
+                <span id="chat-topic">Ask Storm</span>
                 
                 <!-- Namespace/Topic Selector -->
                 <select id="namespace-select">
-                    <option value="general">General</option>
-                    <option value="coding">Coding</option>
-                    <option value="support">Support</option>
+                    <option value="all" selected>All Topics</option>
                 </select>
             </header>
 
@@ -685,23 +702,35 @@
 
             <!-- Input Area -->
             <form id="input-area-form">
-                <!-- File Upload -->
-                <button type="button" id="upload-btn" class="icon-button" title="Upload File">
-                    <!-- Plus Icon SVG -->
+                <!-- Clear Chat Button -->
+                <button type="button" id="clear-btn" class="icon-button" title="Clear Chat">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
                     </svg>
                 </button>
-                <input type="file" id="file-input">
 
                 <!-- Text Input Bar -->
                 <div class="input-bar-glass glass">
-                    <input id="message-input" placeholder="Type your message or say 'stop listening'..." autocomplete="off">
+                    <input id="message-input" placeholder="Ask anything..." autocomplete="off">
                 </div>
+
+                <!-- Send Button -->
+                <button type="submit" id="send-btn" class="icon-button" title="Send Message">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
+                    </svg>
+                </button>
+
+                <!-- File Upload -->
+                <button type="button" id="upload-btn" class="icon-button" title="Upload File">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+                    </svg>
+                </button>
+                <input type="file" id="file-input" multiple>
 
                 <!-- Mic Button -->
                 <button type="button" id="mic-btn" class="icon-button" title="Start/Stop Listening">
-                    <!-- Mic Icon SVG -->
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15a3 3 0 01-3-3V4.5a3 3 0 016 0v7.5a3 3 0 01-3 3z" />
                     </svg>
@@ -714,7 +743,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
 
-            // --- DOM Elements ---
+            // DOM Elements
             const loginOverlay = document.getElementById('login-overlay');
             const loginForm = document.getElementById('login-form');
             const passwordInput = document.getElementById('password-input');
@@ -731,16 +760,18 @@
             const messageInput = document.getElementById('message-input');
             const namespaceSelect = document.getElementById('namespace-select');
             
+            const clearBtn = document.getElementById('clear-btn');
+            const sendBtn = document.getElementById('send-btn');
             const uploadBtn = document.getElementById('upload-btn');
             const fileInput = document.getElementById('file-input');
             const micBtn = document.getElementById('mic-btn');
 
-            // --- State ---
+            // State
             let messageHistory = [];
             let socket;
             const HARDCODED_PASSWORD = 'hemmelig';
             
-            // --- Speech API State ---
+            // Speech API State
             let isListening = false;
             let recognition;
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -751,9 +782,8 @@
             // =================================================================
             loginForm.addEventListener('submit', (e) => {
                 e.preventDefault();
-                const password = passwordInput.value;
+                const password = passwordInput.value.trim();
                 if (password === HARDCODED_PASSWORD) {
-                    // Success
                     loginOverlay.style.opacity = '0';
                     setTimeout(() => {
                         loginOverlay.style.display = 'none';
@@ -762,49 +792,31 @@
                     appContainer.style.display = 'flex';
                     initializeApp();
                 } else {
-                    // Failure
-                    loginError.textContent = 'Adgangskode er forkert.';
+                    loginError.textContent = 'Forkert kode, prøv igen!';
                     loginForm.style.animation = 'shake 0.5s ease';
                     passwordInput.value = '';
                     setTimeout(() => {
                         loginForm.style.animation = '';
-                    }, 500);
+                        loginError.textContent = '';
+                    }, 2000);
                 }
             });
-            
-            // CSS for shake animation
-            const styleSheet = document.createElement("style");
-            styleSheet.type = "text/css";
-            styleSheet.innerText = `@keyframes shake {
-                0% { transform: translateX(0); }
-                25% { transform: translateX(-5px); }
-                50% { transform: translateX(5px); }
-                75% { transform: translateX(-5px); }
-                100% { transform: translateX(0); }
-            }`;
-            document.head.appendChild(styleSheet);
-
 
             // =================================================================
             // 2. APP INITIALIZATION
             // =================================================================
             function initializeApp() {
-                // --- Connect to Socket.IO ---
-                // IMPORTANT: Replace with your actual Socket.IO server URL
-                const SOCKET_URL = "YOUR_SOCKET_SERVER_URL"; 
+                // Connect to Socket.IO server from old frontend
+                const SOCKET_URL = "https://storm-backend-wqd0.onrender.com";
                 try {
-                    // socket = io(SOCKET_URL);
-                    console.log("Socket.IO client initialized (simulated).");
-                    // Add a more visible warning if the URL is not set
-                    if (SOCKET_URL === "YOUR_SOCKET_SERVER_URL") {
-                        addSystemMessage("Klient er ikke tilsluttet. Opdater venligst SOCKET_URL i scriptet.");
-                    }
+                    socket = io(SOCKET_URL);
+                    console.log("Socket.IO client initialized.");
                 } catch (err) {
                     console.error("Socket.IO connection failed:", err);
                     addSystemMessage("Kunne ikke oprette forbindelse til serveren.");
                 }
 
-                // --- Setup Socket Listeners ---
+                // Setup Socket Listeners
                 if (socket) {
                     socket.on('response', (data) => {
                         console.log('Received response:', data);
@@ -823,12 +835,9 @@
                         console.log('Disconnected from socket server.');
                         addSystemMessage("Forbindelse afbrudt.");
                     });
-                } else {
-                    // Simulate receiving messages for demo purposes
-                    console.warn("Socket.IO is not connected. Running in simulation mode.");
                 }
 
-                // --- Setup Event Listeners ---
+                // Setup Event Listeners
                 inputForm.addEventListener('submit', sendMessage);
                 messageInput.addEventListener('keydown', (e) => {
                     if (e.key === 'Enter' && !e.shiftKey) {
@@ -841,6 +850,9 @@
                 historyToggle.addEventListener('click', toggleHistoryPanel);
                 sidebarOverlay.addEventListener('click', () => historyPanel.classList.add('hidden'));
 
+                // Clear Chat
+                clearBtn.addEventListener('click', clearChat);
+
                 // File Upload
                 uploadBtn.addEventListener('click', () => fileInput.click());
                 fileInput.addEventListener('change', handleFileUpload);
@@ -849,7 +861,7 @@
                 setupSpeechRecognition();
                 micBtn.addEventListener('click', toggleSpeechRecognition);
 
-                // --- Load Initial Data ---
+                // Load Initial Data
                 loadChatHistory();
             }
 
@@ -866,44 +878,15 @@
                 renderMessage(userMessage);
 
                 messageInput.value = '';
-                messageInput.style.height = 'auto'; // Reset height for textareas
+                messageInput.style.height = 'auto';
 
                 // Emit to socket server
-                if (socket) {
+                if (socket && socket.connected) {
                     const namespace = namespaceSelect.value;
                     socket.emit('message', { messages: messageHistory, namespace });
                 } else {
-                    // Simulate assistant response
-                    simulateResponse(text);
+                    addSystemMessage("Ikke tilsluttet serveren. Prøv igen senere.");
                 }
-            }
-
-            function simulateResponse(userText) {
-                const lcText = userText.toLowerCase();
-                let response = "Jeg modtog: '" + userText + "'. (Dette er et simuleret svar.)";
-                
-                if (lcText.includes("```html")) {
-                    response = "Her er et eksempel på HTML-gengivelse:\n\n```html\n" +
-                               "<!DOCTYPE html><html><head><title>Test</title></head>" +
-                               "<body style='font-family: sans-serif; padding: 1rem; background: #f0f8ff;'>" +
-                               "<h1>Hello from the iFrame!</h1><p>This is rendered inside an iFrame.</p>" +
-                               "<button onclick='alert(\"Clicked!\")'>Click me</button>" +
-                               "</body></html>\n```";
-                } else if (lcText.includes("```python")) {
-                    response = "Her er noget Python-kode:\n\n```python\n" +
-                               "def hello_world():\n" +
-                               "    print('Hello, world!')\n\n" +
-                               "hello_world()\n```";
-                } else if (lcText.includes("hej")) {
-                    response = "Hej med dig! Hvordan kan jeg hjælpe dig i dag?";
-                }
-
-                setTimeout(() => {
-                    const assistantMessage = { role: 'assistant', content: response };
-                    messageHistory.push(assistantMessage);
-                    renderMessage(assistantMessage);
-                    speakText(response);
-                }, 1000);
             }
 
             function renderMessage(message) {
@@ -913,7 +896,7 @@
                 const content = message.content;
                 
                 // Check for HTML block
-                const htmlMatch = /```html([\s\S]*)```/i.exec(content);
+                const htmlMatch = /```html([\s\S]*?)```/i.exec(content);
 
                 if (htmlMatch && message.role === 'assistant') {
                     // Part 1: Text before the code
@@ -971,8 +954,8 @@
 
             function addSystemMessage(text) {
                 const messageEl = document.createElement('div');
-                messageEl.classList.add('message', 'system-message');
-                messageEl.style.cssText = 'align-self: center; background: #e8f5e9; color: #388e3c; font-style: italic; font-size: 0.9em;';
+                messageEl.classList.add('message');
+                messageEl.style.cssText = 'align-self: center; background: rgba(255,255,255,0.8); color: #388e3c; font-style: italic; font-size: 0.9em; max-width: 50%;';
                 messageEl.textContent = text;
                 messageList.appendChild(messageEl);
                 scrollToBottom();
@@ -980,6 +963,12 @@
 
             function scrollToBottom() {
                 messageList.scrollTop = messageList.scrollHeight;
+            }
+
+            function clearChat() {
+                messageHistory = [];
+                messageList.innerHTML = "";
+                addSystemMessage("Chat ryddet.");
             }
 
             // =================================================================
@@ -996,48 +985,51 @@
 
                 recognition = new SpeechRecognition();
                 recognition.continuous = true;
-                recognition.interimResults = true;
-                recognition.lang = 'da-DK'; // Danish, as password is Danish
+                recognition.interimResults = false;
+                recognition.lang = 'en-US'; // Change to 'da-DK' for Danish
 
                 recognition.onresult = (event) => {
-                    let final_transcript = '';
-                    let interim_transcript = '';
-
-                    for (let i = event.resultIndex; i < event.results.length; ++i) {
-                        if (event.results[i].isFinal) {
-                            final_transcript += event.results[i][0].transcript;
-                        } else {
-                            interim_transcript += event.results[i][0].transcript;
-                        }
+                    const speech = event.results[event.results.length - 1][0].transcript;
+                    
+                    // Check for stop command
+                    if (speech.toLowerCase().includes('stop listening')) {
+                        recognition.stop();
+                        micBtn.classList.remove('active');
+                        isListening = false;
+                        return;
                     }
 
-                    // Update input field with interim results
-                    messageInput.value = final_transcript + interim_transcript;
-
-                    // Check for "stop" command
-                    if (final_transcript.toLowerCase().includes('stop listening') || interim_transcript.toLowerCase().includes('stop listening')) {
-                        toggleSpeechRecognition(); // Stop listening
-                        messageInput.value = messageInput.value.replace(/stop listening/i, '').trim();
-                        sendMessage(new Event('submit')); // Send the message
+                    // Add to message history and send
+                    messageHistory.push({ role: "user", content: speech });
+                    renderMessage({ role: "user", content: speech });
+                    
+                    if (socket && socket.connected) {
+                        socket.emit('message', { 
+                            messages: messageHistory, 
+                            namespace: namespaceSelect.value 
+                        });
                     }
                 };
 
                 recognition.onend = () => {
                     if (isListening) {
-                        // Restart recognition if it stops unexpectedly
-                        recognition.start();
+                        // Restart if still supposed to be listening
+                        try {
+                            recognition.start();
+                        } catch (err) {
+                            console.log("Recognition restart failed:", err);
+                            isListening = false;
+                            micBtn.classList.remove('active');
+                        }
                     }
                 };
 
                 recognition.onerror = (event) => {
                     console.error("Speech recognition error:", event.error);
-                    if (event.error === 'no-speech') {
-                        // Ignore no-speech errors and just restart if still listening
-                    } else if (event.error === 'network') {
-                        addSystemMessage("Netværksfejl i talegenkendelse.");
-                    } else {
+                    if (event.error !== 'no-speech' && event.error !== 'aborted') {
                         isListening = false;
                         micBtn.classList.remove('active');
+                        addSystemMessage("Talegenkendelse fejl: " + event.error);
                     }
                 };
             }
@@ -1058,9 +1050,9 @@
                         isListening = true;
                         micBtn.classList.add('active');
                         micBtn.title = "Stop Listening (or say 'stop listening')";
-                        messageInput.focus();
                     } catch (err) {
-                        console.error("Error starting recognition (might be already started):", err);
+                        console.error("Error starting recognition:", err);
+                        addSystemMessage("Kunne ikke starte talegenkendelse.");
                     }
                 }
             }
@@ -1069,73 +1061,80 @@
                 // Stop any previous speech
                 synthesis.cancel();
 
-                // Clean text for speech (e.g., remove code blocks)
-                const cleanText = text.replace(/```[\s\S]*?```/g, "kodeblok.");
+                // Clean text for speech (remove code blocks and markdown)
+                const cleanText = text
+                    .replace(/```[\s\S]*?```/g, "kodeblok.")
+                    .replace(/\*\*/g, '')
+                    .replace(/\*/g, '')
+                    .replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1');
                 
                 const utterance = new SpeechSynthesisUtterance(cleanText);
-                utterance.lang = 'da-DK'; // Speak in Danish
+                utterance.lang = 'en-US'; // Change to 'da-DK' for Danish
                 
-                // Find a Danish voice if available
+                // Find appropriate voice if available
                 const voices = synthesis.getVoices();
-                const danishVoice = voices.find(voice => voice.lang === 'da-DK');
-                if (danishVoice) {
-                    utterance.voice = danishVoice;
+                const preferredVoice = voices.find(voice => voice.lang === 'en-US');
+                if (preferredVoice) {
+                    utterance.voice = preferredVoice;
                 }
                 
                 synthesis.speak(utterance);
             }
             
-            // Load voices when they are ready
-            synthesis.onvoiceschanged = () => {
-                console.log("Speech synthesis voices loaded.");
-            };
+            // Load voices when ready
+            if (synthesis.onvoiceschanged !== undefined) {
+                synthesis.onvoiceschanged = () => {
+                    console.log("Speech synthesis voices loaded.");
+                };
+            }
 
             // =================================================================
-            // 5. INPUT OPTIONS (File Upload)
+            // 5. FILE UPLOAD
             // =================================================================
 
             function handleFileUpload(event) {
-                const file = event.target.files[0];
-                if (!file) return;
+                const files = event.target.files;
+                if (!files || files.length === 0) return;
 
-                console.log("File uploaded:", file.name, file.type);
+                for (let file of files) {
+                    console.log("File uploaded:", file.name, file.type);
 
-                // For simplicity, we'll only read text-based files
-                if (file.type.startsWith('text/')) {
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        const fileContent = e.target.result;
-                        const messageText = `Uploaded file: ${file.name}\n\n\`\`\`\n${fileContent.substring(0, 500)}${fileContent.length > 500 ? '...' : ''}\n\`\`\``;
-                        
+                    // For text-based files, read content
+                    if (file.type.startsWith('text/') || file.type === 'application/json') {
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            const fileContent = e.target.result;
+                            const messageText = `Uploaded file: ${file.name}\n\n\`\`\`\n${fileContent.substring(0, 500)}${fileContent.length > 500 ? '...' : ''}\n\`\`\``;
+                            
+                            const userMessage = { role: 'user', content: messageText };
+                            messageHistory.push(userMessage);
+                            renderMessage(userMessage);
+                            
+                            if (socket && socket.connected) {
+                                socket.emit('message', { 
+                                    messages: messageHistory, 
+                                    namespace: namespaceSelect.value 
+                                });
+                            }
+                        };
+                        reader.readAsText(file);
+                    } else {
+                        // Handle non-text files (just state the file name)
+                        const messageText = `Uploaded file: ${file.name} (Type: ${file.type})`;
                         const userMessage = { role: 'user', content: messageText };
                         messageHistory.push(userMessage);
                         renderMessage(userMessage);
                         
-                        // Optionally send to socket
-                        if (socket) {
-                            const namespace = namespaceSelect.value;
-                            socket.emit('message', { messages: messageHistory, namespace });
-                        } else {
-                            simulateResponse(messageText);
+                        if (socket && socket.connected) {
+                            socket.emit('message', { 
+                                messages: messageHistory, 
+                                namespace: namespaceSelect.value 
+                            });
                         }
-                    };
-                    reader.readAsText(file);
-                } else {
-                    // Handle non-text files (e.g., just state the file name)
-                    const messageText = `Uploaded file: ${file.name} (Type: ${file.type})`;
-                    const userMessage = { role: 'user', content: messageText };
-                    messageHistory.push(userMessage);
-                    renderMessage(userMessage);
-                    
-                    if (socket) {
-                        const namespace = namespaceSelect.value;
-                        socket.emit('message', { messages: messageHistory, namespace });
-                    } else {
-                        simulateResponse(messageText);
                     }
                 }
                 
-                // Reset file input to allow uploading the same file again
+                // Reset file input
                 fileInput.value = null;
             }
             
@@ -1148,36 +1147,49 @@
             }
 
             function loadChatHistory() {
-                // --- Simulation ---
-                // In a real app, this would be an API call.
-                // We simulate it with dummy data.
-                const dummyChats = [
-                    { id: 1, title: "Introduktion til AI" },
-                    { id: 2, title: "Python Kode Hjælp" },
-                    { id: 3, title: "HTML iFrame Test" }
-                ];
-
-                chatHistoryList.innerHTML = ''; // Clear list
+                // Load chat history from server (simulated here)
+                // In production, this would fetch from your backend
                 
-                dummyChats.forEach(chat => {
-                    const li = document.createElement('li');
-                    li.textContent = chat.title;
-                    li.dataset.chatId = chat.id;
-                    li.addEventListener('click', () => loadChat(chat.id));
-                    chatHistoryList.appendChild(li);
+                // Clear existing history
+                chatHistoryList.innerHTML = '';
+                
+                // For now, just show a placeholder
+                const placeholderLi = document.createElement('li');
+                placeholderLi.textContent = 'Ny chat';
+                placeholderLi.classList.add('active');
+                placeholderLi.addEventListener('click', () => {
+                    clearChat();
+                    addSystemMessage("Ny chat startet.");
                 });
-
-                // Auto-load chat ID 1 as per spec
-                if (dummyChats.length > 0) {
-                    loadChat(1);
-                    chatHistoryList.querySelector('li[data-chat-id="1"]').classList.add('active');
-                }
+                chatHistoryList.appendChild(placeholderLi);
+                
+                // You can add actual history loading here
+                // Example implementation from old frontend:
+                /*
+                fetch('/history')
+                    .then(response => response.json())
+                    .then(chats => {
+                        chatHistoryList.innerHTML = '';
+                        chats.forEach(chat => {
+                            const li = document.createElement('li');
+                            li.textContent = chat.title || `Chat ${chat.id}`;
+                            li.dataset.chatId = chat.id;
+                            li.addEventListener('click', () => loadChat(chat.id));
+                            chatHistoryList.appendChild(li);
+                        });
+                        
+                        if (chats.length > 0) {
+                            loadChat(chats[0].id);
+                        }
+                    })
+                    .catch(err => console.error('Failed to load chat history:', err));
+                */
             }
 
             function loadChat(chatId) {
                 console.log(`Loading chat ${chatId}...`);
-
-                // Update active state in sidebar
+                
+                // Update active state
                 chatHistoryList.querySelectorAll('li').forEach(li => {
                     li.classList.toggle('active', li.dataset.chatId == chatId);
                 });
@@ -1185,13 +1197,17 @@
                 // Clear current chat
                 messageList.innerHTML = '';
                 messageHistory = [];
-
-                // --- Simulation ---
-                // In a real app, you'd fetch the message history for this chat ID.
-                // We'll just add a simple message.
-                const systemMessage = `Velkommen! Du ser nu chat #${chatId}. (Dette er simuleret.)`;
-                messageHistory = [{ role: 'assistant', content: systemMessage }];
-                renderMessage(messageHistory[0]);
+                
+                // Example implementation:
+                /*
+                fetch(`/chat/${chatId}`)
+                    .then(response => response.json())
+                    .then(messages => {
+                        messageHistory = messages;
+                        messages.forEach(msg => renderMessage(msg));
+                    })
+                    .catch(err => console.error('Failed to load chat:', err));
+                */
                 
                 // Hide sidebar on mobile after selection
                 if (window.innerWidth <= 768) {
