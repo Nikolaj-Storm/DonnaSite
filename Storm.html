@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="da">
 <head>
@@ -247,27 +248,6 @@
             display: block;
         }
 
-        #request-code {
-            position: absolute;
-            bottom: 0.5rem;
-            right: 0.5rem;
-            padding: 0.4rem 0.8rem;
-            font-size: 0.85rem;
-            font-weight: bold;
-            background-color: white;
-            color: #e73c7e;
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            border-radius: 0.4rem;
-            cursor: pointer;
-            text-decoration: none;
-            transition: all 0.2s ease;
-        }
-
-        #request-code:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
-
         /* Main App Container */
         #app-container {
             display: none;
@@ -476,9 +456,29 @@
         /* Input Area */
         #input-area-form {
             display: flex;
+            flex-direction: column;
             gap: 0.75rem;
             padding: 1.5rem;
             flex-shrink: 0;
+        }
+        
+        /* Action buttons row (desktop) */
+        #action-buttons-row {
+            display: flex;
+            justify-content: center;
+            gap: 0.75rem;
+            align-items: center;
+        }
+
+        /* Desktop: hide by default */
+        #action-buttons-row {
+            display: none;
+        }
+
+        /* Input row */
+        #input-row {
+            display: flex;
+            gap: 0.75rem;
             align-items: flex-end;
         }
         
@@ -646,6 +646,16 @@
                 width: 44px;
                 height: 44px;
             }
+
+            /* Mobile: Show action buttons row above input */
+            #action-buttons-row {
+                display: flex;
+            }
+
+            /* Mobile: Hide buttons from input row */
+            #input-row .icon-button {
+                display: none;
+            }
         }
     </style>
 </head>
@@ -658,7 +668,6 @@
             <input type="text" id="password-input" placeholder="Adgangskode" autocomplete="off">
             <span id="login-error"></span>
             <button type="submit">Log ind</button>
-            <a id="request-code" href="mailto:nikolajstormpetersen@gmail.com?subject=Kodeanmodning&body=Jeg%20kunne%20godt%20t%C3%A6nke%20mig%20en%20kode">Få kode</a>
         </form>
     </div>
 
@@ -702,39 +711,59 @@
 
             <!-- Input Area -->
             <form id="input-area-form">
-                <!-- Clear Chat Button -->
-                <button type="button" id="clear-btn" class="icon-button" title="Clear Chat">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-                    </svg>
-                </button>
+                <!-- Action buttons row (mobile only) -->
+                <div id="action-buttons-row">
+                    <!-- Send Button -->
+                    <button type="submit" class="icon-button" title="Send Message">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
+                        </svg>
+                    </button>
 
-                <!-- Text Input Bar -->
-                <div class="input-bar-glass glass">
-                    <input id="message-input" placeholder="Ask anything..." autocomplete="off">
+                    <!-- File Upload -->
+                    <button type="button" id="upload-btn-mobile" class="icon-button" title="Upload File">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+                        </svg>
+                    </button>
+
+                    <!-- Mic Button -->
+                    <button type="button" id="mic-btn-mobile" class="icon-button" title="Start/Stop Listening">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15a3 3 0 01-3-3V4.5a3 3 0 016 0v7.5a3 3 0 01-3 3z" />
+                        </svg>
+                    </button>
                 </div>
 
-                <!-- Send Button -->
-                <button type="submit" id="send-btn" class="icon-button" title="Send Message">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
-                    </svg>
-                </button>
+                <!-- Input row -->
+                <div id="input-row">
+                    <!-- Text Input Bar -->
+                    <div class="input-bar-glass glass">
+                        <input id="message-input" placeholder="Ask anything..." autocomplete="off">
+                    </div>
 
-                <!-- File Upload -->
-                <button type="button" id="upload-btn" class="icon-button" title="Upload File">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
-                    </svg>
-                </button>
-                <input type="file" id="file-input" multiple>
+                    <!-- Send Button (desktop) -->
+                    <button type="submit" class="icon-button" title="Send Message">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
+                        </svg>
+                    </button>
 
-                <!-- Mic Button -->
-                <button type="button" id="mic-btn" class="icon-button" title="Start/Stop Listening">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15a3 3 0 01-3-3V4.5a3 3 0 016 0v7.5a3 3 0 01-3 3z" />
-                    </svg>
-                </button>
+                    <!-- File Upload (desktop) -->
+                    <button type="button" id="upload-btn" class="icon-button" title="Upload File">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+                        </svg>
+                    </button>
+                    <input type="file" id="file-input" multiple>
+
+                    <!-- Mic Button (desktop) -->
+                    <button type="button" id="mic-btn" class="icon-button" title="Start/Stop Listening">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15a3 3 0 01-3-3V4.5a3 3 0 016 0v7.5a3 3 0 01-3 3z" />
+                        </svg>
+                    </button>
+                </div>
             </form>
         </main>
     </div>
@@ -760,14 +789,15 @@
             const messageInput = document.getElementById('message-input');
             const namespaceSelect = document.getElementById('namespace-select');
             
-            const clearBtn = document.getElementById('clear-btn');
-            const sendBtn = document.getElementById('send-btn');
             const uploadBtn = document.getElementById('upload-btn');
+            const uploadBtnMobile = document.getElementById('upload-btn-mobile');
             const fileInput = document.getElementById('file-input');
             const micBtn = document.getElementById('mic-btn');
+            const micBtnMobile = document.getElementById('mic-btn-mobile');
 
             // State
             let messageHistory = [];
+            let currentChatId = null;
             let socket;
             const HARDCODED_PASSWORD = 'hemmelig';
             
