@@ -876,6 +876,7 @@
             let currentChatId = null;
             let socket;
             const HARDCODED_PASSWORD = 'hemmelig';
+            let attachedFiles = []; // Files attached to current message
             
             // Speech API State
             let isListening = false;
@@ -952,7 +953,7 @@
 
                 uploadBtn.addEventListener('click', () => fileInput.click());
                 uploadBtnMobile.addEventListener('click', () => fileInput.click());
-                fileInput.addEventListener('change', handleFileUpload);
+                fileInput.addEventListener('change', handleFileSelection);
 
                 setupSpeechRecognition();
                 micBtn.addEventListener('click', toggleSpeechRecognition);
@@ -964,23 +965,56 @@
             // =================================================================
             // 3. CHAT INTERFACE
             // =================================================================
-            function sendMessage(e) {
+            async function sendMessage(e) {
                 e.preventDefault();
                 const text = messageInput.value.trim();
-                if (text === '') return;
+                if (text === '' && attachedFiles.length === 0) return;
 
-                const userMessage = { role: 'user', content: text };
+                // Build message content
+                let messageContent = text;
+                
+                // Process attached files
+                if (attachedFiles.length > 0) {
+                    messageContent += '\n\n**Attached files:**\n';
+                    
+                    for (const fileData of attachedFiles) {
+                        messageContent += `\n📎 ${fileData.name} (${fileData.type})\n`;
+                        
+                        if (fileData.content) {
+                            // Add file content to message
+                            if (fileData.type.startsWith('text/') || 
+                                fileData.name.endsWith('.py') || 
+                                fileData.name.endsWith('.js') ||
+                                fileData.name.endsWith('.html') ||
+                                fileData.name.endsWith('.css') ||
+                                fileData.name.endsWith('.json')) {
+                                messageContent += `\n\`\`\`${fileData.language || ''}\n${fileData.content}\n\`\`\`\n`;
+                            } else if (fileData.type === 'application/pdf') {
+                                messageContent += `\nPDF Content:\n${fileData.content}\n`;
+                            } else if (fileData.type.startsWith('image/')) {
+                                messageContent += `\n[Image: ${fileData.name}]\n`;
+                                // For images, we'll include base64 data
+                                messageContent += `\nImage data (base64): ${fileData.content.substring(0, 100)}...\n`;
+                            }
+                        }
+                    }
+                }
+
+                const userMessage = { role: 'user', content: messageContent };
                 messageHistory.push(userMessage);
                 renderMessage(userMessage);
 
                 messageInput.value = '';
                 messageInput.style.height = 'auto';
+                attachedFiles = [];
+                updateFileAttachmentUI();
 
-                // Check if message is a web search query
-                if (isWebSearchQuery(text)) {
+                // Check if message is a web search query (only if no files attached)
+                if (attachedFiles.length === 0 && isWebSearchQuery(text)) {
                     performWebSearch(text);
                 } else if (socket && socket.connected) {
                     const namespace = namespaceSelect.value;
+                    // Send full message history for context
                     socket.emit('message', { messages: messageHistory, namespace });
                 } else {
                     addSystemMessage("Ikke tilsluttet serveren. Prøv igen senere.");
@@ -1363,48 +1397,159 @@
             // 5. FILE UPLOAD
             // =================================================================
 
-            function handleFileUpload(event) {
+            async function handleFileSelection(event) {
                 const files = event.target.files;
                 if (!files || files.length === 0) return;
 
                 for (let file of files) {
-                    console.log("File uploaded:", file.name, file.type);
+                    console.log("File selected:", file.name, file.type);
+                    
+                    const fileData = {
+                        name: file.name,
+                        type: file.type,
+                        size: file.size,
+                        content: null,
+                        language: detectLanguage(file.name)
+                    };
 
-                    if (file.type.startsWith('text/') || file.type === 'application/json') {
-                        const reader = new FileReader();
-                        reader.onload = (e) => {
-                            const fileContent = e.target.result;
-                            const messageText = `Uploaded file: ${file.name}\n\n\`\`\`\n${fileContent.substring(0, 500)}${fileContent.length > 500 ? '...' : ''}\n\`\`\``;
-                            
-                            const userMessage = { role: 'user', content: messageText };
-                            messageHistory.push(userMessage);
-                            renderMessage(userMessage);
-                            
-                            if (socket && socket.connected) {
-                                socket.emit('message', { 
-                                    messages: messageHistory, 
-                                    namespace: namespaceSelect.value 
-                                });
-                            }
-                        };
-                        reader.readAsText(file);
-                    } else {
-                        const messageText = `Uploaded file: ${file.name} (Type: ${file.type})`;
-                        const userMessage = { role: 'user', content: messageText };
-                        messageHistory.push(userMessage);
-                        renderMessage(userMessage);
-                        
-                        if (socket && socket.connected) {
-                            socket.emit('message', { 
-                                messages: messageHistory, 
-                                namespace: namespaceSelect.value 
-                            });
+                    try {
+                        // Handle different file types
+                        if (file.type.startsWith('text/') || 
+                            file.name.endsWith('.py') || 
+                            file.name.endsWith('.js') ||
+                            file.name.endsWith('.html') ||
+                            file.name.endsWith('.css') ||
+                            file.name.endsWith('.json') ||
+                            file.name.endsWith('.txt') ||
+                            file.name.endsWith('.md')) {
+                            // Text-based files
+                            fileData.content = await readTextFile(file);
+                        } else if (file.type === 'application/pdf') {
+                            // PDF files
+                            addSystemMessage(`Processing PDF: ${file.name}...`);
+                            fileData.content = await readPDFFile(file);
+                        } else if (file.type.startsWith('image/')) {
+                            // Image files
+                            fileData.content = await readImageFile(file);
+                        } else if (file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
+                                   file.name.endsWith('.docx')) {
+                            // DOCX files
+                            addSystemMessage(`Processing DOCX: ${file.name}...`);
+                            fileData.content = await readTextFile(file); // Simplified - in production use mammoth.js
+                        } else {
+                            // Other files - try to read as text
+                            fileData.content = await readTextFile(file);
                         }
+
+                        attachedFiles.push(fileData);
+                        addSystemMessage(`File attached: ${file.name}`);
+                    } catch (error) {
+                        console.error(`Error reading file ${file.name}:`, error);
+                        addSystemMessage(`Failed to read file: ${file.name}`);
                     }
                 }
-                
-                fileInput.value = null;
+
+                updateFileAttachmentUI();
+                fileInput.value = null; // Reset input
             }
+
+            function detectLanguage(filename) {
+                const ext = filename.split('.').pop().toLowerCase();
+                const languageMap = {
+                    'py': 'python',
+                    'js': 'javascript',
+                    'html': 'html',
+                    'css': 'css',
+                    'json': 'json',
+                    'txt': 'plaintext',
+                    'md': 'markdown',
+                    'java': 'java',
+                    'cpp': 'cpp',
+                    'c': 'c',
+                    'rs': 'rust',
+                    'go': 'go',
+                    'php': 'php',
+                    'rb': 'ruby',
+                    'ts': 'typescript'
+                };
+                return languageMap[ext] || 'plaintext';
+            }
+
+            function readTextFile(file) {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => resolve(e.target.result);
+                    reader.onerror = reject;
+                    reader.readAsText(file);
+                });
+            }
+
+            function readImageFile(file) {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => resolve(e.target.result); // Base64 data URL
+                    reader.onerror = reject;
+                    reader.readAsDataURL(file);
+                });
+            }
+
+            async function readPDFFile(file) {
+                // Note: This is a simplified version. For production, you should:
+                // 1. Send PDF to backend for processing with PyPDF2 or similar
+                // 2. Or use PDF.js library in frontend
+                
+                // For now, we'll send the file info and let backend handle it
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        // Send base64 PDF data - backend can process it
+                        const base64 = e.target.result.split(',')[1];
+                        resolve(`[PDF file - ${file.size} bytes - base64: ${base64.substring(0, 100)}...]`);
+                    };
+                    reader.onerror = reject;
+                    reader.readAsDataURL(file);
+                });
+            }
+
+            function updateFileAttachmentUI() {
+                // Show attached files in the input area
+                let existingIndicator = document.getElementById('file-indicator');
+                
+                if (attachedFiles.length > 0) {
+                    if (!existingIndicator) {
+                        existingIndicator = document.createElement('div');
+                        existingIndicator.id = 'file-indicator';
+                        existingIndicator.style.cssText = `
+                            padding: 0.5rem;
+                            background: rgba(35, 166, 213, 0.2);
+                            border-radius: 0.5rem;
+                            margin-bottom: 0.5rem;
+                            font-size: 0.9rem;
+                            color: #333;
+                        `;
+                        inputForm.insertBefore(existingIndicator, inputForm.firstChild);
+                    }
+                    
+                    existingIndicator.innerHTML = `
+                        <strong>📎 Attached files (${attachedFiles.length}):</strong><br>
+                        ${attachedFiles.map((f, i) => `
+                            <span style="display: inline-block; margin: 0.25rem 0.5rem 0.25rem 0; padding: 0.25rem 0.5rem; background: rgba(255,255,255,0.7); border-radius: 0.25rem;">
+                                ${f.name}
+                                <button type="button" onclick="removeAttachment(${i})" style="margin-left: 0.5rem; padding: 0 0.25rem; background: none; border: none; color: #e63946; cursor: pointer; font-weight: bold;">×</button>
+                            </span>
+                        `).join('')}
+                    `;
+                } else if (existingIndicator) {
+                    existingIndicator.remove();
+                }
+            }
+
+            // Make removeAttachment globally accessible
+            window.removeAttachment = function(index) {
+                attachedFiles.splice(index, 1);
+                updateFileAttachmentUI();
+                addSystemMessage('File removed from attachments');
+            };
             
             // =================================================================
             // 6. CHAT HISTORY PANEL
@@ -1469,13 +1614,16 @@
                 });
 
                 messageList.innerHTML = '';
-                messageHistory = [];
+                messageHistory = []; // Reset history for new chat
                 currentChatId = chatId;
+                attachedFiles = []; // Clear attachments
+                updateFileAttachmentUI();
                 
                 try {
                     const response = await fetch(`https://storm-backend-wqd0.onrender.com/chat/${chatId}`);
                     const messages = await response.json();
                     
+                    // Load full conversation history
                     messageHistory = messages;
                     messages.forEach(msg => renderMessage(msg));
                 } catch (err) {
