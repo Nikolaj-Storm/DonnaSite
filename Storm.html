@@ -914,8 +914,18 @@
             // =================================================================
             function initializeApp() {
                 const SOCKET_URL = "https://storm-backend-wqd0.onrender.com";
+                
+                console.log("Attempting to connect to:", SOCKET_URL);
+                
                 try {
-                    socket = io(SOCKET_URL);
+                    socket = io(SOCKET_URL, {
+                        transports: ['websocket', 'polling'],
+                        reconnection: true,
+                        reconnectionDelay: 1000,
+                        reconnectionDelayMax: 5000,
+                        reconnectionAttempts: 5
+                    });
+                    
                     console.log("Socket.IO client initialized.");
                 } catch (err) {
                     console.error("Socket.IO connection failed:", err);
@@ -925,6 +935,12 @@
                 if (socket) {
                     socket.on('response', (data) => {
                         console.log('Received response:', data);
+                        
+                        if (data.error) {
+                            addSystemMessage(`Error: ${data.error}`);
+                            return;
+                        }
+                        
                         const assistantMessage = { role: "assistant", content: data.response };
                         messageHistory.push(assistantMessage);
                         renderMessage(assistantMessage);
@@ -932,11 +948,23 @@
                     });
 
                     socket.on('connect', () => {
-                        console.log('Connected to socket server.');
+                        console.log('✅ Connected to socket server.');
+                        addSystemMessage("Tilsluttet serveren.");
                     });
 
-                    socket.on('disconnect', () => {
-                        console.log('Disconnected from socket server.');
+                    socket.on('disconnect', (reason) => {
+                        console.log('❌ Disconnected from socket server. Reason:', reason);
+                        addSystemMessage("Forbindelse afbrudt. Forsøger at genoprette...");
+                    });
+                    
+                    socket.on('connect_error', (error) => {
+                        console.error('Connection error:', error);
+                        addSystemMessage("Forbindelsesfejl. Tjekker server...");
+                    });
+                    
+                    socket.on('reconnect', (attemptNumber) => {
+                        console.log('Reconnected after', attemptNumber, 'attempts');
+                        addSystemMessage("Genoprette forbindelse!");
                     });
                 }
 
@@ -1009,15 +1037,41 @@
                 attachedFiles = [];
                 updateFileAttachmentUI();
 
-                // Check if message is a web search query (only if no files attached)
-                if (attachedFiles.length === 0 && isWebSearchQuery(text)) {
+                // Check socket connection
+                if (!socket) {
+                    addSystemMessage("Socket ikke initialiseret. Genindlæs siden.");
+                    return;
+                }
+                
+                if (!socket.connected) {
+                    addSystemMessage("Forbinder til serveren...");
+                    // Try to connect
+                    socket.connect();
+                    // Wait a bit for connection
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    
+                    if (!socket.connected) {
+                        addSystemMessage("Kunne ikke oprette forbindelse. Tjek internetforbindelse.");
+                        return;
+                    }
+                }
+
+                // Check if message is a web search query (only if no files attached and no conversation history)
+                if (attachedFiles.length === 0 && messageHistory.length <= 1 && isWebSearchQuery(text)) {
                     performWebSearch(text);
-                } else if (socket && socket.connected) {
-                    const namespace = namespaceSelect.value;
-                    // Send full message history for context
-                    socket.emit('message', { messages: messageHistory, namespace });
                 } else {
-                    addSystemMessage("Ikke tilsluttet serveren. Prøv igen senere.");
+                    console.log("Sending message via socket:", {
+                        messages: messageHistory,
+                        namespace: namespaceSelect.value
+                    });
+                    
+                    // Send full message history for context
+                    socket.emit('message', { 
+                        messages: messageHistory, 
+                        namespace: namespaceSelect.value 
+                    });
+                    
+                    addSystemMessage("Sender besked...");
                 }
             }
 
