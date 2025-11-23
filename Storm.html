@@ -1059,7 +1059,10 @@
                         if (data.success && currentBrainIconElement) {
                             currentBrainIconElement.classList.add('saved');
                             closeBrainModal();
-                            addSystemMessage('Memory saved to knowledge base!');
+                            const chunkMsg = data.chunks_saved > 1 
+                                ? ` (${data.chunks_saved} chunks)` 
+                                : '';
+                            addSystemMessage('Memory saved to knowledge base!' + chunkMsg);
                         } else {
                             brainModalStatus.textContent = 'Failed to save: ' + (data.error || 'Unknown error');
                         }
@@ -1852,7 +1855,6 @@
                         namespace: namespaceSelect.value
                     });
                 } else {
-                    // Offline fallback - just mark as saved visually
                     if (currentBrainIconElement) {
                         currentBrainIconElement.classList.add('saved');
                     }
