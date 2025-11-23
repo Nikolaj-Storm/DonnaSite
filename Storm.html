@@ -120,6 +120,54 @@
         .token.inserted {
             color: green;
         }
+        /* Brain Icon */
+        .message-wrapper { display: flex; align-items: flex-start; gap: 0.5rem; }
+        .message-wrapper.user-wrapper { flex-direction: row-reverse; }
+        .message-wrapper.assistant-wrapper { flex-direction: row; }
+
+        .brain-icon {
+            width: 28px; height: 28px; min-width: 28px;
+            background: rgba(100, 180, 255, 0.25);
+            border: 1px solid rgba(100, 180, 255, 0.5);
+            border-radius: 50%; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s ease; opacity: 0.6; margin-top: 0.5rem;
+        }
+        .brain-icon:hover { opacity: 1; background: rgba(100, 180, 255, 0.5); transform: scale(1.1); }
+        .brain-icon.saved { background: rgba(100, 255, 150, 0.4); border-color: rgba(100, 255, 150, 0.7); opacity: 1; }
+        .brain-icon svg { width: 16px; height: 16px; fill: #333; }
+
+        /* Brain Modal */
+        #brain-modal-overlay {
+            position: fixed; inset: 0; z-index: 200;
+            display: none; justify-content: center; align-items: center;
+            background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(5px);
+        }
+        #brain-modal-overlay.active { display: flex; }
+        #brain-modal {
+            width: 90%; max-width: 500px; padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.95); border-radius: 1rem;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+        #brain-modal h3 { margin-bottom: 1rem; color: #333; display: flex; align-items: center; gap: 0.5rem; }
+        #brain-modal h3 svg { width: 24px; height: 24px; fill: #23a6d5; }
+        #brain-modal-status { font-size: 0.9rem; color: #666; margin-bottom: 1rem; font-style: italic; }
+        #brain-refined-text {
+            width: 100%; min-height: 120px; padding: 1rem;
+            border: 1px solid #ddd; border-radius: 0.5rem;
+            font-size: 1rem; resize: vertical; font-family: 'Inter', sans-serif; line-height: 1.5;
+        }
+        #brain-refined-text:focus { outline: none; border-color: #23a6d5; box-shadow: 0 0 0 2px rgba(35, 166, 213, 0.2); }
+        #brain-modal-buttons { display: flex; gap: 0.75rem; margin-top: 1rem; justify-content: flex-end; }
+        .brain-btn {
+            padding: 0.6rem 1.2rem; border-radius: 0.5rem; border: none;
+            font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease;
+        }
+        .brain-btn:hover { transform: translateY(-1px); }
+        .brain-btn.accept { background: #23d5ab; color: #fff; }
+        .brain-btn.deny { background: #e63946; color: #fff; }
+        .brain-btn.cancel { background: #ccc; color: #333; }
+    
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
@@ -747,6 +795,23 @@
         </form>
     </div>
 
+
+    <!-- Brain Memory Modal -->
+    <div id="brain-modal-overlay">
+        <div id="brain-modal">
+            <h3>
+                <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                Save to Memory
+            </h3>
+            <div id="brain-modal-status">Processing...</div>
+            <textarea id="brain-refined-text" placeholder="Refined memory will appear here..."></textarea>
+            <div id="brain-modal-buttons">
+                <button type="button" class="brain-btn cancel" id="brain-cancel-btn">Cancel</button>
+                <button type="button" class="brain-btn deny" id="brain-deny-btn">Deny</button>
+                <button type="button" class="brain-btn accept" id="brain-accept-btn">Accept</button>
+            </div>
+        </div>
+    </div>
     <!-- Main Application -->
     <div id="app-container" style="display: none;">
         
@@ -877,6 +942,19 @@
             let socket;
             const HARDCODED_PASSWORD = 'hemmelig';
             let attachedFiles = []; // Files attached to current message
+
+            // Brain Memory State
+            let currentBrainMessageIndex = null;
+            let currentBrainIconElement = null;
+            const BRAIN_SVG = '<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>';
+
+            // Brain Modal Elements
+            const brainModalOverlay = document.getElementById('brain-modal-overlay');
+            const brainModalStatus = document.getElementById('brain-modal-status');
+            const brainRefinedText = document.getElementById('brain-refined-text');
+            const brainAcceptBtn = document.getElementById('brain-accept-btn');
+            const brainDenyBtn = document.getElementById('brain-deny-btn');
+            const brainCancelBtn = document.getElementById('brain-cancel-btn');
             
             // Speech API State
             let isListening = false;
@@ -943,7 +1021,7 @@
                         
                         const assistantMessage = { role: "assistant", content: data.response };
                         messageHistory.push(assistantMessage);
-                        renderMessage(assistantMessage);
+                        renderMessage(assistantMessage, messageHistory.length - 1);
                         speakText(data.response);
                     });
 
@@ -965,6 +1043,26 @@
                     socket.on('reconnect', (attemptNumber) => {
                         console.log('Reconnected after', attemptNumber, 'attempts');
                         addSystemMessage("Genoprette forbindelse!");
+                    });
+                    // Brain memory socket listeners
+                    socket.on('brain_response', (data) => {
+                        if (data.error) {
+                            brainModalStatus.textContent = 'Error: ' + data.error;
+                            return;
+                        }
+                        brainModalStatus.textContent = 'Review the refined memory below:';
+                        brainRefinedText.value = data.refined_text;
+                        brainRefinedText.disabled = false;
+                    });
+
+                    socket.on('brain_saved', (data) => {
+                        if (data.success && currentBrainIconElement) {
+                            currentBrainIconElement.classList.add('saved');
+                            closeBrainModal();
+                            addSystemMessage('Memory saved to knowledge base!');
+                        } else {
+                            brainModalStatus.textContent = 'Failed to save: ' + (data.error || 'Unknown error');
+                        }
                     });
                 }
 
@@ -988,6 +1086,13 @@
                 micBtnMobile.addEventListener('click', toggleSpeechRecognition);
 
                 loadChatHistory();
+                // Brain modal event listeners
+                brainAcceptBtn.addEventListener('click', acceptBrainMemory);
+                brainDenyBtn.addEventListener('click', closeBrainModal);
+                brainCancelBtn.addEventListener('click', closeBrainModal);
+                brainModalOverlay.addEventListener('click', (e) => {
+                    if (e.target === brainModalOverlay) closeBrainModal();
+                });
             }
 
             // =================================================================
@@ -1030,7 +1135,7 @@
 
                 const userMessage = { role: 'user', content: messageContent };
                 messageHistory.push(userMessage);
-                renderMessage(userMessage);
+                renderMessage(userMessage, messageHistory.length - 1);
 
                 messageInput.value = '';
                 messageInput.style.height = 'auto';
@@ -1114,7 +1219,7 @@
                     
                     const assistantMessage = { role: "assistant", content: answer };
                     messageHistory.push(assistantMessage);
-                    renderMessage(assistantMessage);
+                    renderMessage(assistantMessage, messageHistory.length - 1);
                     speakText(answer);
                     
                 } catch (error) {
@@ -1128,17 +1233,20 @@
                 }
             }
 
-            function renderMessage(message) {
+            function renderMessage(message, messageIndex) {
+                // Create wrapper div
+                const wrapper = document.createElement('div');
+                wrapper.className = 'message-wrapper ' + (message.role === 'user' ? 'user-wrapper' : 'assistant-wrapper');
+    
+                // Create message element
                 const messageEl = document.createElement('div');
                 messageEl.classList.add('message', `${message.role}-message`);
 
                 const content = message.content;
-                
-                // Check for code blocks
                 const codeBlockRegex = /```(\w+)?\n([\s\S]*?)```/g;
                 const codeBlocks = [];
                 let match;
-                
+    
                 while ((match = codeBlockRegex.exec(content)) !== null) {
                     codeBlocks.push({
                         fullMatch: match[0],
@@ -1150,23 +1258,16 @@
 
                 if (codeBlocks.length > 0 && message.role === 'assistant') {
                     let lastIndex = 0;
-                    
                     codeBlocks.forEach((block) => {
-                        // Text before code block
                         const beforeText = content.substring(lastIndex, block.index);
                         if (beforeText.trim()) {
                             const beforeEl = document.createElement('div');
                             beforeEl.innerHTML = marked.parse(beforeText);
                             messageEl.appendChild(beforeEl);
                         }
-                        
-                        // Code block with controls
                         messageEl.appendChild(createCodeBlock(block.language, block.code));
-                        
                         lastIndex = block.index + block.fullMatch.length;
                     });
-                    
-                    // Text after last code block
                     const afterText = content.substring(lastIndex);
                     if (afterText.trim()) {
                         const afterEl = document.createElement('div');
@@ -1177,8 +1278,18 @@
                     messageEl.innerHTML = marked.parse(content);
                 }
 
-                messageList.appendChild(messageEl);
-                
+                // Create brain icon
+                const brainIcon = document.createElement('div');
+                brainIcon.className = 'brain-icon';
+                brainIcon.innerHTML = BRAIN_SVG;
+                brainIcon.title = 'Save to memory';
+                brainIcon.addEventListener('click', () => openBrainModal(messageIndex, brainIcon));
+
+                // Assemble wrapper
+                wrapper.appendChild(messageEl);
+                wrapper.appendChild(brainIcon);
+                messageList.appendChild(wrapper);
+    
                 messageEl.querySelectorAll('pre code').forEach((block) => {
                     Prism.highlightElement(block);
                 });
@@ -1365,7 +1476,7 @@
                     }
 
                     messageHistory.push({ role: "user", content: speech });
-                    renderMessage({ role: "user", content: speech });
+                    renderMessage({ role: "user", content: speech }, messageHistory.length - 1);
                     
                     if (socket && socket.connected) {
                         socket.emit('message', { 
@@ -1679,7 +1790,7 @@
                     
                     // Load full conversation history
                     messageHistory = messages;
-                    messages.forEach(msg => renderMessage(msg));
+                    messages.forEach((msg, idx) => renderMessage(msg, idx));
                 } catch (err) {
                     console.error('Failed to load chat:', err);
                     addSystemMessage(`Chat ${chatId} loaded (empty)`);
@@ -1689,6 +1800,67 @@
                     historyPanel.classList.add('hidden');
                 }
             }
+            // ===== BRAIN MEMORY FUNCTIONS =====
+
+            function openBrainModal(messageIndex, iconElement) {
+                currentBrainMessageIndex = messageIndex;
+                currentBrainIconElement = iconElement;
+    
+                brainModalOverlay.classList.add('active');
+                brainModalStatus.textContent = 'Processing with AI...';
+                brainRefinedText.value = '';
+                brainRefinedText.disabled = true;
+    
+                const message = messageHistory[messageIndex];
+                const contextStart = Math.max(0, messageIndex - 2);
+                const contextEnd = Math.min(messageHistory.length, messageIndex + 3);
+                const contextMessages = messageHistory.slice(contextStart, contextEnd);
+    
+                if (socket && socket.connected) {
+                    socket.emit('brain_request', {
+                        message: message.content,
+                        context: contextMessages.map(m => m.content),
+                        message_role: message.role,
+                        message_index: messageIndex
+                    });
+                } else {
+                    brainModalStatus.textContent = 'Not connected. Enter memory manually:';
+                    brainRefinedText.value = message.content;
+                    brainRefinedText.disabled = false;
+                }
+            }
+
+            function closeBrainModal() {
+                brainModalOverlay.classList.remove('active');
+                currentBrainMessageIndex = null;
+                currentBrainIconElement = null;
+            }
+
+            function acceptBrainMemory() {
+                const refinedText = brainRefinedText.value.trim();
+                if (!refinedText) {
+                    brainModalStatus.textContent = 'Cannot save empty memory';
+                    return;
+                }
+    
+                brainModalStatus.textContent = 'Saving to knowledge base...';
+    
+                if (socket && socket.connected) {
+                    socket.emit('brain_save', {
+                        refined_text: refinedText,
+                        original_index: currentBrainMessageIndex,
+                        namespace: namespaceSelect.value
+                    });
+                } else {
+                    // Offline fallback - just mark as saved visually
+                    if (currentBrainIconElement) {
+                        currentBrainIconElement.classList.add('saved');
+                    }
+                    closeBrainModal();
+                    addSystemMessage('Memory saved locally (offline mode)');
+                }
+            }
+        
         });
     </script>
 </body>
