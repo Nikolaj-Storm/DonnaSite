@@ -414,6 +414,40 @@
             outline: none;
             cursor: pointer;
         }
+        #model-select {
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            background: var(--input-bg);
+            color: var(--text-color);
+            font-size: 0.9rem;
+            outline: none;
+            cursor: pointer;
+            min-width: 140px;
+        }
+
+        /* Memory suggestion hover effects */
+        .save-memory-btn:hover {
+            background: #667eea !important;
+            color: white !important;
+            transform: translateY(-2px);
+        }
+
+        .memory-suggestion-banner,
+        .topic-suggestion-banner {
+            animation: slideInFromRight 0.3s ease;
+        }
+
+        @keyframes slideInFromRight {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
 
         /* Message List */
         #message-list {
@@ -749,8 +783,31 @@
             }
             
             #chat-header {
-                padding: 0.5rem 1rem;
+                flex-wrap: wrap;
+                padding: 0.5rem;
+                gap: 0.5rem;
             }
+            
+            #chat-header > div {
+                width: 100%;
+                display: flex;
+                gap: 0.5rem;
+            }
+            #model-select,
+            #namespace-select {
+                flex: 1;
+                min-width: 0;
+            }
+            
+            .memory-suggestion-banner,
+            .topic-suggestion-banner {
+                font-size: 0.85rem;
+                padding: 0.75rem;
+            }
+            .save-memory-btn {
+                padding: 0.3rem 0.75rem !important;
+                font-size: 0.85rem;
+            }   
             
             #message-list {
                 padding: 0.75rem;
@@ -836,15 +893,19 @@
                         <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
                     </svg>
                 </button>
-                
                 <span id="chat-topic">Ask Storm</span>
-                
-                <!-- Namespace/Topic Selector -->
-                <select id="namespace-select">
-                    <option value="all" selected>General</option>
-                </select>
+                <div style="display: flex; gap: 0.5rem;">
+                    <select id="model-select" title="AI Model">
+                        <option value="auto" selected>🤖 Auto</option>
+                        <option value="simple">⚡ Flash (Fast)</option>
+                        <option value="moderate">⚖️ Haiku (Balanced)</option>
+                        <option value="complex">🧠 Sonnet (Smart)</option>
+                    </select>
+                    <select id="namespace-select">
+                        <option value="all" selected>All Topics</option>
+                    </select>
+                </div>
             </header>
-
             <!-- Message List -->
             <div id="message-list">
                 <!-- Messages will be appended here -->
@@ -1012,17 +1073,21 @@
 
                 if (socket) {
                     socket.on('response', (data) => {
-                        console.log('Received response:', data);
-                        
-                        if (data.error) {
-                            addSystemMessage(`Error: ${data.error}`);
-                            return;
-                        }
-                        
-                        const assistantMessage = { role: "assistant", content: data.response };
-                        messageHistory.push(assistantMessage);
-                        renderMessage(assistantMessage, messageHistory.length - 1);
+                        if (data.error) { addSystemMessage(`Error: ${data.error}`); return; }
+                        const msg = { role: "assistant", content: data.response };
+                        messageHistory.push(msg);
+                        renderMessage(msg, messageHistory.length - 1);
                         speakText(data.response);
+    
+                        // Show memory suggestions if any
+                        if (data.memory_suggestions && data.memory_suggestions.length > 0) {
+                            showMemorySuggestions(data.memory_suggestions);
+                        }
+    
+                        // Show topic suggestion if different from current
+                        if (data.topic_suggestion && data.topic_suggestion.confidence > 0.75) {
+                            showTopicSuggestion(data.topic_suggestion);
+                        }
                     });
 
                     socket.on('connect', () => {
@@ -1174,9 +1239,13 @@
                     });
                     
                     // Send full message history for context
+                    const modelSelect = document.getElementById('model-select');
+                    const selectedModel = modelSelect ? modelSelect.value : 'auto';
+
                     socket.emit('message', { 
                         messages: messageHistory, 
-                        namespace: namespaceSelect.value 
+                        namespace: namespaceSelect.value,
+                        force_model: selectedModel !== 'auto' ? selectedModel : null
                     });
                     
                     addSystemMessage("Sender besked...");
