@@ -1079,12 +1079,37 @@
                         renderMessage(msg, messageHistory.length - 1);
                         speakText(data.response);
     
+                        // Show which model was used (if manual selection was "auto")
+                        const modelSelect = document.getElementById('model-select');
+                        if (modelSelect && modelSelect.value === 'auto' && data.model_used) {
+                            const modelNames = {
+                                'simple': '⚡ Flash',
+                                'moderate': '⚖️ Haiku', 
+                                'complex': '🧠 Sonnet'
+                            };
+                            const modelName = modelNames[data.model_used] || data.model_used;
+        
+                            // Add subtle indicator
+                            const indicator = document.createElement('div');
+                            indicator.style.cssText = `
+                                font-size: 0.75rem; color: #6b7280; 
+                                text-align: right; margin-top: 0.25rem;
+                                font-style: italic;
+                            `;
+                            indicator.textContent = `via ${modelName}`;
+        
+                            const lastMessage = messageList.lastElementChild;
+                            if (lastMessage && lastMessage.querySelector('.assistant-message')) {
+                                lastMessage.querySelector('.message-wrapper').appendChild(indicator);
+                            }
+                        }
+    
                         // Show memory suggestions if any
                         if (data.memory_suggestions && data.memory_suggestions.length > 0) {
                             showMemorySuggestions(data.memory_suggestions);
                         }
     
-                        // Show topic suggestion if different from current
+                        // Show topic suggestion
                         if (data.topic_suggestion && data.topic_suggestion.confidence > 0.75) {
                             showTopicSuggestion(data.topic_suggestion);
                         }
