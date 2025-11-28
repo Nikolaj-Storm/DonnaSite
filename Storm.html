@@ -1956,7 +1956,107 @@
                     addSystemMessage('Memory saved locally (offline mode)');
                 }
             }
+            // ===== MEMORY SUGGESTIONS FUNCTIONS =====
+
+            function showMemorySuggestions(suggestions) {
+                const banner = document.createElement('div');
+                banner.className = 'memory-suggestion-banner';
+                banner.style.cssText = `
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    color: white; padding: 1rem; border-radius: 0.5rem;
+                    margin: 0.5rem 0; font-size: 0.9rem; box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+                `;
+                banner.innerHTML = `
+                    <div style="font-weight: 600; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                        💡 Suggested Memories
+                        <button onclick="this.parentElement.parentElement.remove()" 
+                                style="margin-left: auto; background: rgba(255,255,255,0.2); border: none; color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem; cursor: pointer;">
+                            ✕
+                        </button>
+                    </div>
+                    ${suggestions.map((s, i) => `
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin: 0.5rem 0; background: rgba(255,255,255,0.1); padding: 0.5rem; border-radius: 0.25rem;">
+                            <span style="flex: 1;">${escapeHtml(s.memory)}</span>
+                            <button onclick="quickSaveMemory(\`${escapeHtml(s.memory)}\`, ${i}, this)" 
+                                    class="save-memory-btn"
+                                    style="background: white; color: #667eea; border: none; padding: 0.4rem 1rem; border-radius: 0.25rem; cursor: pointer; font-weight: 600; margin-left: 1rem; transition: all 0.2s;">
+                                Save
+                            </button>
+                        </div>
+                    `).join('')}
+                `;
+                messageList.appendChild(banner);
+                scrollToBottom();
+            }
+
+            function showTopicSuggestion(topic) {
+                if (namespaceSelect.value === topic.topic) return; // Already on this topic
+    
+                const banner = document.createElement('div');
+                banner.className = 'topic-suggestion-banner';
+                banner.style.cssText = `
+                    background: #3b82f6; color: white; padding: 0.75rem 1rem;
+                    border-radius: 0.5rem; margin: 0.5rem 0;
+                    display: flex; justify-content: space-between; align-items: center;
+                    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+                `;
+                banner.innerHTML = `
+                    <span>💼 Looks like <strong>${escapeHtml(topic.topic)}</strong> chat. Switch namespace?</span>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button onclick="switchNamespace('${escapeHtml(topic.topic)}'); this.parentElement.parentElement.remove();" 
+                                style="background: white; color: #3b82f6; border: none; padding: 0.5rem 1rem; border-radius: 0.25rem; cursor: pointer; font-weight: 600;">
+                            Switch
+                        </button>
+                        <button onclick="this.parentElement.parentElement.remove()" 
+                                style="background: rgba(255,255,255,0.2); border: none; color: white; padding: 0.5rem 1rem; border-radius: 0.25rem; cursor: pointer;">
+                            Dismiss
+                        </button>
+                    </div>
+                `;
+                messageList.appendChild(banner);
+                scrollToBottom();
+            }
+
+            function quickSaveMemory(text, index, button) {
+                if (socket && socket.connected) {
+                    socket.emit('brain_save', {
+                        refined_text: text,
+                        namespace: namespaceSelect.value
+                    });
         
+                    // Visual feedback
+                    button.textContent = '✓ Saved';
+                    button.style.background = '#10b981';
+                    button.style.color = 'white';
+                    button.disabled = true;
+        
+                    setTimeout(() => {
+                        button.parentElement.style.opacity = '0.5';
+                    }, 500);
+        
+                    addSystemMessage('Memory saved!');
+                }
+            }
+
+            function switchNamespace(topic) {
+                // Add option if doesn't exist
+                let option = Array.from(namespaceSelect.options).find(opt => opt.value === topic);
+                if (!option) {
+                    option = document.createElement('option');
+                    option.value = topic;
+                    option.textContent = topic.charAt(0).toUpperCase() + topic.slice(1);
+                    namespaceSelect.appendChild(option);
+                }
+                namespaceSelect.value = topic;
+                addSystemMessage(`Switched to ${topic} namespace`);
+            }
+
+            function escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+
         });
     </script>
 </body>
