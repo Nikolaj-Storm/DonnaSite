@@ -1074,7 +1074,7 @@
                 if (socket) {
                     socket.on('response', (data) => {
                         if (data.error) { addSystemMessage(`Error: ${data.error}`); return; }
-                        const msg = { role: "assistant", content: data.response };
+                        const msg = { role: "assistant", content: data.answer || data.response };
                         messageHistory.push(msg);
                         renderMessage(msg, messageHistory.length - 1);
                         speakText(data.response);
