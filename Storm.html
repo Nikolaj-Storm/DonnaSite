@@ -167,7 +167,146 @@
         .brain-btn.accept { background: #23d5ab; color: #fff; }
         .brain-btn.deny { background: #e63946; color: #fff; }
         .brain-btn.cancel { background: #ccc; color: #333; }
+
+        /* Multi-select namespace dropdown */
+        .namespace-multiselect {
+            position: relative;
+            display: inline-block;
+            min-width: 180px;
+        }
+
+        .namespace-multiselect-trigger {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            background: var(--input-bg);
+            color: var(--text-color);
+            font-size: 0.9rem;
+            cursor: pointer;
+            user-select: none;
+            gap: 0.5rem;
+        }
+
+        .namespace-multiselect-trigger:hover {
+            background: rgba(255, 255, 255, 0.6);
+        }
+
+        .namespace-count {
+            background: #667eea;
+            color: white;
+            padding: 0.15rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .namespace-dropdown {
+            position: absolute;
+            top: calc(100% + 4px);
+            left: 0;
+            right: 0;
+            background: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            display: none;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .namespace-dropdown.active {
+            display: block;
+        }
+
+        .namespace-option {
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            transition: background 0.15s ease;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .namespace-option:last-child {
+            border-bottom: none;
+        }
+
+        .namespace-option:hover {
+            background: #f9fafb;
+        }
+
+        .namespace-option.selected {
+            background: #e0e7ff;
+        }
+
+        .namespace-checkbox {
+            width: 18px;
+            height: 18px;
+            border: 2px solid #d1d5db;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .namespace-option.selected .namespace-checkbox {
+            background: #667eea;
+            border-color: #667eea;
+        }
+
+        .namespace-checkbox svg {
+            width: 12px;
+            height: 12px;
+            stroke: white;
+            stroke-width: 3;
+            display: none;
+        }
+
+        .namespace-option.selected .namespace-checkbox svg {
+            display: block;
+        }
+
+        .namespace-info {
+            flex: 1;
+        }
+
+        .namespace-name {
+            font-weight: 600;
+            color: #1f2937;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .namespace-icon {
+            font-size: 1.1rem;
+        }
+
+        .namespace-description {
+            font-size: 0.85rem;
+            color: #6b7280;
+            line-height: 1.4;
+        }
+
+        /* Mobile adjustments */
+        @media (max-width: 768px) {
+            .namespace-multiselect {
+                width: 100%;
+                min-width: 0;
+            }
     
+            .namespace-dropdown {
+                max-height: 300px;
+            }
+        }
+        
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
@@ -1184,6 +1323,9 @@
                 brainCancelBtn.addEventListener('click', closeBrainModal);
                 brainModalOverlay.addEventListener('click', (e) => {
                     if (e.target === brainModalOverlay) closeBrainModal();
+
+                initNamespaceSelect();
+                
                 });
             }
 
@@ -1269,8 +1411,8 @@
                     // ALWAYS force the selected model (no auto-detection)
                     socket.emit('message', { 
                         messages: messageHistory, 
-                        namespace: namespaceSelect.value,
-                        force_model: selectedModel  // Always pass selection
+                        namespaces: selectedNamespaces,  // Send array
+                        force_model: selectedModel
                     });
                     
                     addSystemMessage("Sender besked...");
@@ -1939,14 +2081,17 @@
                     brainModalStatus.textContent = 'Cannot save empty memory';
                     return;
                 }
-    
+
                 brainModalStatus.textContent = 'Saving to knowledge base...';
-    
+
                 if (socket && socket.connected) {
+                    // Use first selected namespace for brain saves
+                    const saveNamespace = selectedNamespaces[0] || 'general';
+        
                     socket.emit('brain_save', {
                         refined_text: refinedText,
                         original_index: currentBrainMessageIndex,
-                        namespace: namespaceSelect.value
+                        namespace: saveNamespace
                     });
                 } else {
                     if (currentBrainIconElement) {
