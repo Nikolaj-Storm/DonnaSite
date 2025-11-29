@@ -311,7 +311,145 @@
     <script src="path/to/namespace-selector.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <!-- Add this new script tag -->
+    <script>
+    // State for selected namespaces
+    let selectedNamespaces = ['general'];  // Default
+    let availableNamespaces = {};
 
+    // Initialize namespace multi-select
+    async function initNamespaceSelect() {
+        try {
+            // Fetch available namespaces from backend
+            const response = await fetch('https://storm-backend-wqd0.onrender.com/namespaces');
+            const data = await response.json();
+            availableNamespaces = data.namespaces;
+        
+            // Create the multi-select UI
+            createNamespaceMultiSelect();
+        
+        } catch (error) {
+            console.error('Failed to load namespaces:', error);
+            availableNamespaces = {
+                'general': {
+                    name: 'General',
+                    description: 'General memories',
+                    icon: '📝',
+                    color: '#6b7280'
+                }
+            };
+            createNamespaceMultiSelect();
+        }
+    }
+
+    function createNamespaceMultiSelect() {
+        // Find the old namespace select and replace it
+        const oldSelect = document.getElementById('namespace-select');
+        if (!oldSelect) return;
+    
+        const container = oldSelect.parentElement;
+    
+        // Create new multi-select component
+        const multiSelect = document.createElement('div');
+        multiSelect.className = 'namespace-multiselect';
+        multiSelect.id = 'namespace-multiselect';
+    
+        multiSelect.innerHTML = `
+            <div class="namespace-multiselect-trigger" id="namespace-trigger">
+                <span id="namespace-trigger-text">📂 Namespaces</span>
+                <span class="namespace-count" id="namespace-count">1</span>
+            </div>
+            <div class="namespace-dropdown" id="namespace-dropdown">
+                ${Object.entries(availableNamespaces).map(([key, ns]) => `
+                    <div class="namespace-option ${selectedNamespaces.includes(key) ? 'selected' : ''}" data-namespace="${key}">
+                        <div class="namespace-checkbox">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                        </div>
+                        <div class="namespace-info">
+                            <div class="namespace-name">
+                                <span class="namespace-icon">${ns.icon}</span>
+                                ${ns.name}
+                            </div>
+                            <div class="namespace-description">${ns.description}</div>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    
+        // Replace old select with new multi-select
+        container.replaceChild(multiSelect, oldSelect);
+    
+        // Add event listeners
+        setupNamespaceListeners();
+        updateNamespaceDisplay();
+    }
+
+    function setupNamespaceListeners() {
+        const trigger = document.getElementById('namespace-trigger');
+        const dropdown = document.getElementById('namespace-dropdown');
+        const options = dropdown.querySelectorAll('.namespace-option');
+    
+        // Toggle dropdown
+        trigger.addEventListener('click', (e) => {
+            e.stopPropagation();
+            dropdown.classList.toggle('active');
+        });
+    
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.namespace-multiselect')) {
+                dropdown.classList.remove('active');
+            }
+        });
+    
+        // Handle option selection
+        options.forEach(option => {
+            option.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const namespace = option.dataset.namespace;
+            
+                if (selectedNamespaces.includes(namespace)) {
+                    // Deselect (but keep at least one selected)
+                    if (selectedNamespaces.length > 1) {
+                        selectedNamespaces = selectedNamespaces.filter(ns => ns !== namespace);
+                        option.classList.remove('selected');
+                    }
+                } else {
+                    // Select
+                    selectedNamespaces.push(namespace);
+                    option.classList.add('selected');
+                }
+            
+                updateNamespaceDisplay();
+            });
+        });
+    }
+
+    function updateNamespaceDisplay() {
+        const countEl = document.getElementById('namespace-count');
+        const triggerText = document.getElementById('namespace-trigger-text');
+    
+        if (countEl) {
+            countEl.textContent = selectedNamespaces.length;
+        }
+    
+        if (triggerText) {
+            if (selectedNamespaces.length === 1) {
+                const ns = availableNamespaces[selectedNamespaces[0]];
+                triggerText.textContent = `${ns.icon} ${ns.name}`;
+            } else if (selectedNamespaces.length === Object.keys(availableNamespaces).length) {
+                triggerText.textContent = '📚 All Namespaces';
+            } else {
+                triggerText.textContent = '📂 Multiple';
+            }
+        }
+    
+        console.log('Selected namespaces:', selectedNamespaces);
+    }
+    </script>
     <!-- Main Application Styles -->
     <style>
         :root {
@@ -1322,9 +1460,8 @@
                 brainCancelBtn.addEventListener('click', closeBrainModal);
                 brainModalOverlay.addEventListener('click', (e) => {
                     if (e.target === brainModalOverlay) closeBrainModal();
-                
+                initNamespaceSelect();
                 });
-            initNamespaceSelect();
             }
 
             // =================================================================
@@ -1716,11 +1853,11 @@
                     renderMessage({ role: "user", content: speech }, messageHistory.length - 1);
                     
                     if (socket && socket.connected) {
-                        socket.emit('message', { 
-                            messages: messageHistory, 
-                            namespaces: selectedNamespaces  // Send array instead
-                        });
-                    }
+                            socket.emit('message', { 
+                                messages: messageHistory, 
+                                namespaces: selectedNamespaces  // NEW - array
+                            });
+                        }
                 };
 
                 recognition.onend = () => {
@@ -2162,27 +2299,28 @@
             }
 
             function quickSaveMemory(text, index, button) {
+                window.quickSaveMemory = function(text, index, button) {
+                const saveNamespace = selectedNamespaces[0] || 'general';
                 if (socket && socket.connected) {
-                    const saveNamespace = selectedNamespaces[0] || 'general';
                     socket.emit('brain_save', {
-                        refined_text: refinedText,
-                        original_index: currentBrainMessageIndex,
+                        refined_text: text,
                         namespace: saveNamespace
                     });
-        
+
                     // Visual feedback
                     button.textContent = '✓ Saved';
                     button.style.background = '#10b981';
                     button.style.color = 'white';
                     button.disabled = true;
-        
+
                     setTimeout(() => {
                         button.parentElement.style.opacity = '0.5';
                     }, 500);
-        
+
                     addSystemMessage('Memory saved!');
                 }
             }
+
 
             function switchNamespace(topic) {
                 // Add option if doesn't exist
