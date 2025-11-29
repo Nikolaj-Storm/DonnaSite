@@ -1265,12 +1265,13 @@
                     
                     // Send full message history for context
                     const modelSelect = document.getElementById('model-select');
-                    const selectedModel = modelSelect ? modelSelect.value : 'auto';
+                    const selectedModel = modelSelect ? modelSelect.value : 'moderate';  // Default to Haiku
 
+                    // ALWAYS force the selected model (no auto-detection)
                     socket.emit('message', { 
                         messages: messageHistory, 
                         namespace: namespaceSelect.value,
-                        force_model: selectedModel !== 'auto' ? selectedModel : null
+                        force_model: selectedModel  // Always pass selection
                     });
                     
                     addSystemMessage("Sender besked...");
