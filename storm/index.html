@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Storm</title>
+    <link rel="icon" href="visuals/favicon.png" type="image/png">
+    
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZG39HWNCCF"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-ZG39HWNCCF');
+    </script>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Fira+Code:wght@500&display=swap" rel="stylesheet">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/prism-theme.css">
+    <link rel="stylesheet" href="css/styles.css">
+    
+    <!-- Libraries -->
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+</head>
+<body>
+    <!-- Login Overlay -->
+    <div id="login-overlay">
+        <form id="login-form" class="glass">
+            <h2>Indtast adgangskode</h2>
+            <input type="text" id="password-input" placeholder="Adgangskode" autocomplete="off">
+            <span id="login-error"></span>
+            <button type="submit">Log ind</button>
+        </form>
+    </div>
+
+    <!-- Brain Memory Modal -->
+    <div id="brain-modal-overlay">
+        <div id="brain-modal">
+            <h3>
+                <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                Save to Memory
+            </h3>
+            <div id="brain-modal-status">Processing...</div>
+            <textarea id="brain-refined-text" placeholder="Refined memory will appear here..."></textarea>
+            <div id="brain-modal-buttons">
+                <button type="button" class="brain-btn cancel" id="brain-cancel-btn">Cancel</button>
+                <button type="button" class="brain-btn deny" id="brain-deny-btn">Deny</button>
+                <button type="button" class="brain-btn accept" id="brain-accept-btn">Accept</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Application -->
+    <div id="app-container" style="display: none;">
+        <aside id="history-panel" class="glass hidden">
+            <h3>Chat Historik</h3>
+            <ul id="chat-history-list"></ul>
+        </aside>
+        
+        <div id="sidebar-overlay"></div>
+
+        <main id="chat-container" class="glass">
+            <header id="chat-header">
+                <button id="history-toggle" title="Toggle Chat History">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                    </svg>
+                </button>
+                <span id="chat-topic">Ask Storm</span>
+                <div style="display: flex; gap: 0.5rem;">
+                    <select id="model-select" title="AI Model">
+                        <option value="moderate" selected>⚖️ Haiku</option>
+                        <option value="simple">⚡ Gemini Pro</option>
+                        <option value="complex">🧠 Sonnet</option>
+                    </select>
+                </div>
+            </header>
+            
+            <div id="message-list"></div>
+
+            <form id="input-area-form">
+                <div id="action-buttons-row">
+                    <button type="submit" class="icon-button" title="Send Message">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
+                        </svg>
+                    </button>
+                    <button type="button" id="upload-btn-mobile" class="icon-button" title="Upload File">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+                        </svg>
+                    </button>
+                    <button type="button" id="mic-btn-mobile" class="icon-button" title="Start/Stop Listening">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15a3 3 0 01-3-3V4.5a3 3 0 016 0v7.5a3 3 0 01-3 3z" />
+                        </svg>
+                    </button>
+                </div>
+
+                <div id="input-row">
+                    <div class="input-bar-glass glass">
+                        <input id="message-input" placeholder="Ask anything..." autocomplete="off">
+                    </div>
+                    <button type="submit" class="icon-button" title="Send Message">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
+                        </svg>
+                    </button>
+                    <button type="button" id="upload-btn" class="icon-button" title="Upload File">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+                        </svg>
+                    </button>
+                    <input type="file" id="file-input" multiple>
+                    <button type="button" id="mic-btn" class="icon-button" title="Start/Stop Listening">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15a3 3 0 01-3-3V4.5a3 3 0 016 0v7.5a3 3 0 01-3 3z" />
+                        </svg>
+                    </button>
+                </div>
+            </form>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/config.js"></script>
+    <script src="js/state.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/socket.js"></script>
+    <script src="js/features.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
