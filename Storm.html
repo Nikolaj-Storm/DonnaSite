@@ -2269,7 +2269,7 @@
             }
 
             function showTopicSuggestion(topic) {
-                if (namespaceSelect.value === topic.topic) return; // Already on this topic
+                if (selectedNamespaces.includes(topic.topic)) return; // Check if already selected
     
                 const banner = document.createElement('div');
                 banner.className = 'topic-suggestion-banner';
@@ -2297,7 +2297,6 @@
             }
 
             function quickSaveMemory(text, index, button) {
-                window.quickSaveMemory = function(text, index, button) {
                 const saveNamespace = selectedNamespaces[0] || 'general';
                 if (socket && socket.connected) {
                     socket.emit('brain_save', {
@@ -2321,15 +2320,9 @@
 
 
             function switchNamespace(topic) {
-                // Add option if doesn't exist
-                let option = Array.from(namespaceSelect.options).find(opt => opt.value === topic);
-                if (!option) {
-                    option = document.createElement('option');
-                    option.value = topic;
-                    option.textContent = topic.charAt(0).toUpperCase() + topic.slice(1);
-                    namespaceSelect.appendChild(option);
-                }
-                namespaceSelect.value = topic;
+                // For multi-select: set as the only selected namespace
+                selectedNamespaces = [topic];
+                updateNamespaceDisplay();
                 addSystemMessage(`Switched to ${topic} namespace`);
             }
 
