@@ -2220,9 +2220,7 @@
                 brainModalStatus.textContent = 'Saving to knowledge base...';
 
                 if (socket && socket.connected) {
-                    // Use first selected namespace for brain saves
-                    const saveNamespace = selectedNamespaces[0] || 'general';
-        
+                    // Use first selected namespace for brain saves        
                     const saveNamespace = selectedNamespaces[0] || 'general';
                     socket.emit('brain_save', {
                         refined_text: refinedText,
