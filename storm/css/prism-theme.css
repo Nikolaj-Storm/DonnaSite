@@ -1,0 +1,225 @@
+/* Prism.js Tomorrow Night Theme for Code Syntax Highlighting */
+
+code[class*="language-"],
+pre[class*="language-"] {
+    color: #ccc;
+    background: none;
+    font-family: "Fira Code", monospace;
+    font-size: 0.9em;
+    text-align: left;
+    white-space: pre;
+    word-spacing: normal;
+    word-break: normal;
+    word-wrap: normal;
+    line-height: 1.5;
+    -moz-tab-size: 4;
+    -o-tab-size: 4;
+    tab-size: 4;
+    -webkit-hyphens: none;
+    -moz-hyphens: none;
+    -ms-hyphens: none;
+    hyphens: none;
+}
+
+pre[class*="language-"] {
+    padding: 1em;
+    margin: .5em 0;
+    overflow: auto;
+    border-radius: 0.5rem;
+}
+
+:not(pre) > code[class*="language-"] {
+    padding: .1em;
+    border-radius: .3em;
+    white-space: normal;
+}
+
+.token.comment,
+.token.block-comment,
+.token.prolog,
+.token.doctype,
+.token.cdata {
+    color: #999;
+}
+
+.token.punctuation {
+    color: #ccc;
+}
+
+.token.tag,
+.token.attr-name,
+.token.namespace,
+.token.deleted {
+    color: #e2777a;
+}
+
+.token.function-name {
+    color: #6196cc;
+}
+
+.token.boolean,
+.token.number,
+.token.function {
+    color: #f08d49;
+}
+
+.token.property,
+.token.class-name,
+.token.constant,
+.token.symbol {
+    color: #f8c555;
+}
+
+.token.selector,
+.token.important,
+.token.atrule,
+.token.keyword,
+.token.builtin {
+    color: #cc99cd;
+}
+
+.token.string,
+.token.char,
+.token.attr-value,
+.token.regex,
+.token.variable {
+    color: #7ec699;
+}
+
+.token.operator,
+.token.entity,
+.token.url {
+    color: #67cdcc;
+}
+
+.token.important,
+.token.bold {
+    font-weight: bold;
+}
+
+.token.italic {
+    font-style: italic;
+}
+
+.token.entity {
+    cursor: help;
+}
+
+.token.inserted {
+    color: green;
+}
+
+/* Code Block Container */
+.code-block-container {
+    margin: 1rem 0;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    background: rgba(0, 0, 0, 0.7);
+}
+
+.code-block-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0.75rem;
+    background: rgba(0, 0, 0, 0.5);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.code-block-language {
+    color: #ccc;
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.code-block-controls {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.code-control-btn {
+    padding: 0.25rem 0.75rem;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 0.25rem;
+    color: #fff;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.code-control-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-1px);
+}
+
+.code-control-btn.active {
+    background: rgba(35, 166, 213, 0.5);
+    border-color: rgba(35, 166, 213, 0.8);
+}
+
+.code-block-content {
+    position: relative;
+}
+
+.code-preview-container,
+.code-source-container {
+    display: none;
+}
+
+.code-preview-container.active,
+.code-source-container.active {
+    display: block;
+}
+
+/* HTML Preview iFrame */
+.html-iframe-container {
+    margin: 0;
+    border: none;
+    border-radius: 0;
+    overflow: hidden;
+    background: #fff;
+}
+
+.html-iframe {
+    width: 100%;
+    height: 400px;
+    border: none;
+    background: #fff;
+    resize: vertical;
+    overflow: auto;
+}
+
+.assistant-message pre {
+    background: rgba(0, 0, 0, 0.7) !important;
+    border-radius: 0.5rem;
+    margin: 1rem 0;
+    font-size: 0.85rem;
+    position: relative;
+}
+
+/* Copy Notification */
+.copy-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: rgba(35, 166, 213, 0.9);
+    color: white;
+    padding: 1rem 1.5rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(400px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
