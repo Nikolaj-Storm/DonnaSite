@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Storm - GitHub Integration</title>
+    <link rel="icon" href="visuals/favicon.png" type="image/png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .glass {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border-radius: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        header {
+            padding: 2rem;
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        h1 {
+            color: white;
+            font-size: 2.5rem;
+        }
+        
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+        
+        .btn-github {
+            background: #24292e;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-github:hover {
+            background: #1b1f23;
+            transform: translateY(-2px);
+        }
+        
+        .btn-primary {
+            background: #4f46e5;
+            color: white;
+        }
+        
+        .btn-danger {
+            background: #e63946;
+            color: white;
+        }
+        
+        .section {
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .repo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .repo-card {
+            background: rgba(255, 255, 255, 0.3);
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .repo-card:hover {
+            background: rgba(255, 255, 255, 0.4);
+            transform: translateY(-2px);
+        }
+        
+        .repo-card h3 {
+            color: white;
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+        
+        .repo-card p {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+        
+        .repo-meta {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .status {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-top: 0.5rem;
+        }
+        
+        .status.indexed {
+            background: rgba(16, 185, 129, 0.3);
+            color: white;
+        }
+        
+        .status.indexing {
+            background: rgba(251, 191, 36, 0.3);
+            color: white;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 1rem;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+        }
+        
+        .modal-content h2 {
+            margin-bottom: 1rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            border: 1px solid #ddd;
+            font-family: inherit;
+        }
+        
+        .indexed-list {
+            margin-top: 1rem;
+        }
+        
+        .indexed-item {
+            background: rgba(255, 255, 255, 0.3);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .indexed-info h4 {
+            color: white;
+            margin-bottom: 0.25rem;
+        }
+        
+        .indexed-info p {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="glass">
+            <h1>🐙 GitHub Integration</h1>
+            <button id="connect-github-btn" class="btn btn-github">
+                <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+                </svg>
+                Connect GitHub
+            </button>
+        </header>
+        
+        <!-- Indexed Repos -->
+        <div class="section glass" id="indexed-section">
+            <h2 style="color: white; margin-bottom: 1rem;">📂 Indexed Repositories</h2>
+            <div class="indexed-list" id="indexed-list">
+                <p style="color: rgba(255,255,255,0.7);">No repositories indexed yet.</p>
+            </div>
+        </div>
+        
+        <!-- Available Repos -->
+        <div class="section glass" id="repos-section" style="display: none;">
+            <h2 style="color: white; margin-bottom: 1rem;">🔍 Your Repositories</h2>
+            <div class="repo-grid" id="repos-grid"></div>
+        </div>
+        
+        <!-- Index Modal -->
+        <div class="modal" id="index-modal">
+            <div class="modal-content">
+                <h2>Index Repository</h2>
+                <p style="margin-bottom: 1rem; color: #666;">
+                    Select files/folders to index (optional)
+                </p>
+                
+                <div class="form-group">
+                    <label>Repository</label>
+                    <input type="text" id="repo-name-display" readonly>
+                </div>
+                
+                <div class="form-group">
+                    <label>Selective Paths (comma-separated, optional)</label>
+                    <input type="text" id="selective-paths" placeholder="e.g., src/, docs/">
+                    <small style="color: #666;">Leave empty to index entire repo</small>
+                </div>
+                
+                <div style="display: flex; gap: 0.5rem; margin-top: 1.5rem;">
+                    <button class="btn btn-primary" id="confirm-index-btn">Start Indexing</button>
+                    <button class="btn" onclick="closeModal()" style="background: #ccc;">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const BACKEND_URL = 'https://storm-backend-wqd0.onrender.com';
+        let selectedRepo = null;
+        let isConnected = false;
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            checkConnection();
+            loadIndexedRepos();
+            
+            document.getElementById('connect-github-btn').addEventListener('click', connectGitHub);
+            document.getElementById('confirm-index-btn').addEventListener('click', confirmIndex);
+        });
+        
+        async function checkConnection() {
+            try {
+                const response = await fetch(`${BACKEND_URL}/github/repos`);
+                if (response.ok) {
+                    isConnected = true;
+                    document.getElementById('connect-github-btn').textContent = '✓ Connected';
+                    document.getElementById('connect-github-btn').style.background = '#10b981';
+                    loadRepos();
+                }
+            } catch (error) {
+                console.log('Not connected to GitHub');
+            }
+        }
+        
+        async function connectGitHub() {
+            try {
+                const response = await fetch(`${BACKEND_URL}/github/oauth/authorize`);
+                const data = await response.json();
+                window.location.href = data.auth_url;
+            } catch (error) {
+                alert('Failed to start GitHub OAuth: ' + error.message);
+            }
+        }
+        
+        async function loadRepos() {
+            try {
+                const response = await fetch(`${BACKEND_URL}/github/repos`);
+                const data = await response.json();
+                
+                const grid = document.getElementById('repos-grid');
+                grid.innerHTML = '';
+                
+                data.repos.forEach(repo => {
+                    const card = document.createElement('div');
+                    card.className = 'repo-card';
+                    card.onclick = () => openIndexModal(repo);
+                    
+                    card.innerHTML = `
+                        <h3>${repo.name}</h3>
+                        <p>${repo.description || 'No description'}</p>
+                        <div class="repo-meta">
+                            <span>🔵 ${repo.language || 'Unknown'}</span>
+                            <span>📊 ${(repo.size / 1024).toFixed(1)} MB</span>
+                        </div>
+                    `;
+                    
+                    grid.appendChild(card);
+                });
+                
+                document.getElementById('repos-section').style.display = 'block';
+            } catch (error) {
+                console.error('Failed to load repos:', error);
+            }
+        }
+        
+        async function loadIndexedRepos() {
+            try {
+                const response = await fetch(`${BACKEND_URL}/github/repos/indexed`);
+                const data = await response.json();
+                
+                const list = document.getElementById('indexed-list');
+                list.innerHTML = '';
+                
+                if (data.repos.length === 0) {
+                    list.innerHTML = '<p style="color: rgba(255,255,255,0.7);">No repositories indexed yet.</p>';
+                    return;
+                }
+                
+                data.repos.forEach(repo => {
+                    const item = document.createElement('div');
+                    item.className = 'indexed-item';
+                    
+                    item.innerHTML = `
+                        <div class="indexed-info">
+                            <h4>${repo.full_name}</h4>
+                            <p>${repo.chunk_count} chunks • ${repo.framework || repo.language}</p>
+                            <span class="status ${repo.status === 'complete' ? 'indexed' : 'indexing'}">
+                                ${repo.status === 'complete' ? '✓ Indexed' : '⏳ Indexing...'}
+                            </span>
+                        </div>
+                        <button class="btn btn-danger" onclick="deleteRepo(${repo.id})">Remove</button>
+                    `;
+                    
+                    list.appendChild(item);
+                });
+            } catch (error) {
+                console.error('Failed to load indexed repos:', error);
+            }
+        }
+        
+        function openIndexModal(repo) {
+            selectedRepo = repo;
+            document.getElementById('repo-name-display').value = repo.full_name;
+            document.getElementById('selective-paths').value = '';
+            document.getElementById('index-modal').classList.add('active');
+        }
+        
+        function closeModal() {
+            document.getElementById('index-modal').classList.remove('active');
+        }
+        
+        async function confirmIndex() {
+            if (!selectedRepo) return;
+            
+            const pathsInput = document.getElementById('selective-paths').value;
+            const selectivePaths = pathsInput ? pathsInput.split(',').map(p => p.trim()) : null;
+            
+            const [owner, repo] = selectedRepo.full_name.split('/');
+            
+            try {
+                const response = await fetch(`${BACKEND_URL}/github/repos/index`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        owner,
+                        repo,
+                        selective_paths: selectivePaths
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    closeModal();
+                    alert('Indexing started! This may take a few minutes.');
+                    setTimeout(loadIndexedRepos, 2000);
+                } else {
+                    alert('Indexing failed: ' + data.error);
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+        
+        async function deleteRepo(repoId) {
+            if (!confirm('Remove this repository from your knowledge base?')) return;
+            
+            try {
+                const response = await fetch(`${BACKEND_URL}/github/repos/${repoId}`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    loadIndexedRepos();
+                }
+            } catch (error) {
+                alert('Failed to delete: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>
