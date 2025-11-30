@@ -308,7 +308,6 @@
         }
         
     </style>
-    <script src="path/to/namespace-selector.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
     <!-- Add this new script tag -->
@@ -1536,9 +1535,8 @@
                 } else {
                     console.log("Sending message via socket:", {
                         messages: messageHistory,
-                        namespace: namespaceSelect.value
+                        namespaces: selectedNamespaces  // ✓ Correct reference
                     });
-                    
                     // Send full message history for context
                     const modelSelect = document.getElementById('model-select');
                     const selectedModel = modelSelect ? modelSelect.value : 'moderate';  // Default to Haiku
