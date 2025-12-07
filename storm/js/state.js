@@ -10,6 +10,7 @@ const AppState = {
     messageHistory: [],
     currentChatId: null,
     attachedFiles: [],
+    currentGithubRepo: null, // Track attached GitHub repo
     
     // Namespace state
     selectedNamespaces: ['general'],
@@ -75,16 +76,9 @@ const AppState = {
     resetChat() {
         this.messageHistory = [];
         this.attachedFiles = [];
+        this.currentGithubRepo = null;
         this.elements.messageList.innerHTML = '';
-        
     }
-    const State = {
-    messages: [],
-    currentChatId: null,
-    currentGithubRepo: null,  // NEW: Track attached repo
-    isListening: false,
-    isProcessing: false
-};
 };
 
 console.log('✅ State module loaded');
