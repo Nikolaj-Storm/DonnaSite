@@ -76,7 +76,15 @@ const AppState = {
         this.messageHistory = [];
         this.attachedFiles = [];
         this.elements.messageList.innerHTML = '';
+        
     }
+    const State = {
+    messages: [],
+    currentChatId: null,
+    currentGithubRepo: null,  // NEW: Track attached repo
+    isListening: false,
+    isProcessing: false
+};
 };
 
 console.log('✅ State module loaded');
