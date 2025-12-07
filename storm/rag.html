@@ -45,6 +45,9 @@
         header {
             padding: 2rem;
             margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
         
         h1 {
@@ -56,6 +59,40 @@
         .subtitle {
             color: rgba(255, 255, 255, 0.9);
             font-size: 1.1rem;
+        }
+        
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-back {
+            background: white;
+            color: #23a6d5;
+        }
+        
+        .btn-back:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+        
+        .btn-primary {
+            background: #4f46e5;
+            color: white;
+        }
+        
+        .btn-danger {
+            background: #e63946;
+            color: white;
         }
         
         .stats {
@@ -117,30 +154,6 @@
             resize: vertical;
         }
         
-        .btn {
-            padding: 0.75rem 1.5rem;
-            border-radius: 0.5rem;
-            border: none;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        
-        .btn-primary {
-            background: #4f46e5;
-            color: white;
-        }
-        
-        .btn-primary:hover {
-            background: #4338ca;
-            transform: translateY(-2px);
-        }
-        
-        .btn-danger {
-            background: #e63946;
-            color: white;
-        }
-        
         .documents-section {
             padding: 2rem;
         }
@@ -196,8 +209,13 @@
 <body>
     <div class="container">
         <header class="glass">
-            <h1>📚 Knowledge Base</h1>
-            <p class="subtitle">Manage your RAG documents</p>
+            <div>
+                <h1>📚 Knowledge Base</h1>
+                <p class="subtitle">Manage your RAG documents</p>
+            </div>
+            <a href="index.html" class="btn btn-back">
+                ← Back to Chat
+            </a>
         </header>
         
         <div class="stats" id="stats-container">
@@ -255,15 +273,11 @@
     <script>
         const BACKEND_URL = 'https://storm-backend-wqd0.onrender.com';
         
-        // Load stats and documents on page load
         document.addEventListener('DOMContentLoaded', () => {
             loadStats();
             loadDocuments();
             
-            // File input handler
             document.getElementById('file-input').addEventListener('change', handleFileSelect);
-            
-            // Form submit
             document.getElementById('upload-form').addEventListener('submit', handleUpload);
         });
         
