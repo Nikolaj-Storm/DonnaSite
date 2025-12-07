@@ -1,8 +1,127 @@
-// Socket.IO Connection & Event Handlers
+// storm/js/socket.js
+
+const CONFIG = {
+    SOCKET_URL: window.STORM_SOCKET_URL || 'https://donnaai.dk',
+    DEFAULT_MODEL: 'gpt-4o-mini'
+};
+
+const AppState = {
+    socket: null,
+    isConnected: false,
+    isProcessing: false,
+    messageHistory: [],
+    selectedNamespaces: ['general'],
+    attachedFiles: [],
+    currentGithubRepo: null, // ensure this exists if you use it elsewhere
+    elements: {},
+};
+
+const UI = {
+    init() {
+        AppState.elements = {
+            messageList: document.getElementById('message-list'),
+            messageInput: document.getElementById('message-input'),
+            sendButton: document.getElementById('send-button'),
+            modelSelect: document.getElementById('model-select'),
+            namespaceSelect: document.getElementById('namespace-select'),
+            statusIndicator: document.getElementById('status-indicator'),
+            fileInput: document.getElementById('file-input'),
+            fileList: document.getElementById('file-list'),
+        };
+
+        this.setupEventListeners();
+    },
+
+    setupEventListeners() {
+        const { messageInput, sendButton } = AppState.elements;
+
+        if (sendButton) {
+            sendButton.addEventListener('click', () => {
+                SocketManager.sendMessage(messageInput.value.trim());
+            });
+        }
+
+        if (messageInput) {
+            messageInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    SocketManager.sendMessage(messageInput.value.trim());
+                }
+            });
+        }
+    },
+
+    setStatus(text) {
+        if (AppState.elements.statusIndicator) {
+            AppState.elements.statusIndicator.textContent = text;
+        }
+    },
+
+    addSystemMessage(text) {
+        const messageList = AppState.elements.messageList;
+        if (!messageList) return;
+
+        const li = document.createElement('li');
+        li.className = 'system-message';
+        li.textContent = text;
+        messageList.appendChild(li);
+        messageList.scrollTop = messageList.scrollHeight;
+    },
+
+    renderMessage(message, index) {
+        const messageList = AppState.elements.messageList;
+        if (!messageList) return;
+
+        const li = document.createElement('li');
+        li.className = message.role === 'user' ? 'user-message' : 'assistant-message';
+
+        const wrapper = document.createElement('div');
+        wrapper.className = 'message-wrapper';
+
+        const content = document.createElement('div');
+        content.className = 'message-content';
+        content.innerHTML = marked.parse(message.content || '');
+
+        wrapper.appendChild(content);
+        li.appendChild(wrapper);
+        messageList.appendChild(li);
+        messageList.scrollTop = messageList.scrollHeight;
+    }
+};
+
+const Features = {
+    updateFileAttachmentUI() {
+        const fileList = AppState.elements.fileList;
+        if (!fileList) return;
+
+        fileList.innerHTML = '';
+
+        for (const fileData of AppState.attachedFiles) {
+            const li = document.createElement('li');
+            li.textContent = `${fileData.name} (${fileData.type})`;
+            fileList.appendChild(li);
+        }
+    },
+
+    showTypingIndicator(modelName) {
+        const messageList = AppState.elements.messageList;
+        if (!messageList) return;
+
+        const indicator = document.createElement('div');
+        indicator.className = 'typing-indicator';
+        indicator.textContent = `via ${modelName}`;
+
+        const lastMessage = messageList.lastElementChild;
+        if (lastMessage?.querySelector('.assistant-message')) {
+            lastMessage.querySelector('.message-wrapper').appendChild(indicator);
+        }
+    }
+};
+
 const SocketManager = {
     init() {
         console.log("Connecting to:", CONFIG.SOCKET_URL);
-        
+
         try {
             AppState.socket = io(CONFIG.SOCKET_URL, {
                 transports: ['websocket', 'polling'],
@@ -11,7 +130,7 @@ const SocketManager = {
                 reconnectionDelayMax: 5000,
                 reconnectionAttempts: 5
             });
-            
+
             this.setupListeners();
             console.log("Socket.IO client initialized");
         } catch (err) {
@@ -19,122 +138,53 @@ const SocketManager = {
             UI.addSystemMessage("Kunne ikke oprette forbindelse til serveren.");
         }
     },
-    
+
     setupListeners() {
         const socket = AppState.socket;
-        
-        // Connection events
+        if (!socket) return;
+
         socket.on('connect', () => {
-            console.log('✅ Connected to socket server');
-            UI.addSystemMessage("Tilsluttet serveren.");
+            AppState.isConnected = true;
+            UI.setStatus('Forbundet');
         });
-        
-        socket.on('disconnect', (reason) => {
-            console.log('❌ Disconnected:', reason);
-            UI.addSystemMessage("Forbindelse afbrudt. Forsøger at genoprette...");
+
+        socket.on('disconnect', () => {
+            AppState.isConnected = false;
+            UI.setStatus('Afbrudt');
         });
-        
-        socket.on('connect_error', (error) => {
-            console.error('Connection error:', error);
-            UI.addSystemMessage("Forbindelsesfejl. Tjekker server...");
-        });
-        
-        socket.on('reconnect', (attemptNumber) => {
-            console.log('Reconnected after', attemptNumber, 'attempts');
-            UI.addSystemMessage("Genoprette forbindelse!");
-        });
-        
-        // Message response
+
         socket.on('response', (data) => {
             if (data.error) {
                 UI.addSystemMessage(`Error: ${data.error}`);
+                AppState.isProcessing = false;
                 return;
             }
-            
-            const msg = { 
-                role: "assistant", 
-                content: data.answer || data.response 
+
+            const assistantMessage = {
+                role: 'assistant',
+                content: data.content || ''
             };
-            AppState.messageHistory.push(msg);
-            UI.renderMessage(msg, AppState.messageHistory.length - 1);
-            Features.speakText(data.response);
-            
-            // Show model used indicator
-            this.showModelIndicator(data.model_used);
-            
-            // Memory suggestions
-            if (data.memory_suggestions?.length > 0) {
-                Features.showMemorySuggestions(data.memory_suggestions);
-            }
-            
-            // Topic suggestions
-            if (data.topic_suggestion?.confidence > 0.75) {
-                Features.showTopicSuggestion(data.topic_suggestion);
-            }
-        });
-        
-        // Brain memory events
-        socket.on('brain_response', (data) => {
-            if (data.error) {
-                AppState.elements.brainModalStatus.textContent = 'Error: ' + data.error;
-                return;
-            }
-            AppState.elements.brainModalStatus.textContent = 'Review the refined memory below:';
-            AppState.elements.brainRefinedText.value = data.refined_text;
-            AppState.elements.brainRefinedText.disabled = false;
-        });
-        
-        socket.on('brain_saved', (data) => {
-            if (data.success && AppState.currentBrainIconElement) {
-                AppState.currentBrainIconElement.classList.add('saved');
-                Features.closeBrainModal();
-                const chunkMsg = data.chunks_saved > 1 
-                    ? ` (${data.chunks_saved} chunks)` 
-                    : '';
-                UI.addSystemMessage('Memory saved to knowledge base!' + chunkMsg);
-            } else {
-                AppState.elements.brainModalStatus.textContent = 'Failed to save: ' + (data.error || 'Unknown error');
-            }
+
+            AppState.messageHistory.push(assistantMessage);
+            UI.renderMessage(assistantMessage, AppState.messageHistory.length - 1);
+            AppState.isProcessing = false;
         });
     },
-    
-    showModelIndicator(modelUsed) {
-        const modelSelect = AppState.elements.modelSelect;
-        if (modelSelect?.value === 'auto' && modelUsed) {
-            const modelNames = {
-                'simple': '⚡ Flash',
-                'moderate': '⚖️ Haiku', 
-                'complex': '🧠 Sonnet'
-            };
-            const modelName = modelNames[modelUsed] || modelUsed;
-            
-            const indicator = document.createElement('div');
-            indicator.style.cssText = `
-                font-size: 0.75rem; color: #6b7280; 
-                text-align: right; margin-top: 0.25rem;
-                font-style: italic;
-            `;
-            indicator.textContent = `via ${modelName}`;
-            
-            const lastMessage = AppState.elements.messageList.lastElementChild;
-            if (lastMessage?.querySelector('.assistant-message')) {
-                lastMessage.querySelector('.message-wrapper').appendChild(indicator);
-            }
-        }
-    },
-    
+
     async sendMessage(text) {
+        if (!text || AppState.isProcessing) return;
+
         // Build message with file attachments
         let messageContent = text;
-        
+
         if (AppState.attachedFiles.length > 0) {
             messageContent += '\n\n**Attached files:**\n';
-            
+
             for (const fileData of AppState.attachedFiles) {
                 messageContent += `\n📎 ${fileData.name} (${fileData.type})\n`;
-                
+
                 if (fileData.content) {
-                    if (fileData.type.startsWith('text/') || 
+                    if (fileData.type.startsWith('text/') ||
                         fileData.name.match(/\.(py|js|html|css|json)$/)) {
                         messageContent += `\n\`\`\`${fileData.language || ''}\n${fileData.content}\n\`\`\`\n`;
                     } else if (fileData.type === 'application/pdf') {
@@ -146,42 +196,6 @@ const SocketManager = {
                 }
             }
         }
-        
-        // Add to history
-        const userMessage = { role: 'user', content: messageContent };
-        AppState.messageHistory.push(userMessage);
-        UI.renderMessage(userMessage, AppState.messageHistory.length - 1);
-        
-        // Clear input
-        AppState.elements.messageInput.value = '';
-        AppState.elements.messageInput.style.height = 'auto';
-        AppState.attachedFiles = [];
-        Features.updateFileAttachmentUI();
-        
-        // Check connection
-        if (!AppState.socket?.connected) {
-            UI.addSystemMessage("Forbinder til serveren...");
-            AppState.socket?.connect();
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            
-            if (!AppState.socket?.connected) {
-                UI.addSystemMessage("Kunne ikke oprette forbindelse. Tjek internetforbindelse.");
-                return;
-            }
-        }
-        
-        // Send message
-        const modelSelect = AppState.elements.modelSelect;
-        const selectedModel = modelSelect?.value || CONFIG.DEFAULT_MODEL;
-        
-        AppState.socket.emit('message', { 
-            messages: AppState.messageHistory, 
-            namespaces: AppState.selectedNamespaces,
-            force_model: selectedModel
-        });
-        
-        UI.addSystemMessage("Sender besked...");
-    }
-};
 
-console.log('✅ Socket module loaded');
+        // Add to history
+        const userMessage
