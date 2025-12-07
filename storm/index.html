@@ -15,8 +15,7 @@
         gtag('config', 'G-ZG39HWNCCF');
     </script>
 
-    
-    <script src="js/upload-modal.js"></script>
+    <!-- REMOVED: upload-modal.js should NOT be here -->
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -202,7 +201,16 @@
         </main>
     </div>
 
-    <!-- Scripts -->
+    <!-- Scripts - CRITICAL: MUST BE IN THIS EXACT ORDER -->
+    <script>
+        // Pre-flight check
+        console.log('=== Storm App Loading ===');
+        console.log('1. Checking external libraries...');
+        console.log('   - io:', typeof io);
+        console.log('   - marked:', typeof marked);
+        console.log('   - Prism:', typeof Prism);
+    </script>
+    
     <script src="js/config.js"></script>
     <script src="js/state.js"></script>
     <script src="js/ui.js"></script>
@@ -210,5 +218,19 @@
     <script src="js/features.js"></script>
     <script src="js/upload-modal.js"></script>
     <script src="js/app.js"></script>
+    
+    <script>
+        // Post-load verification
+        console.log('=== Storm Modules Loaded ===');
+        console.log('CONFIG:', typeof CONFIG);
+        console.log('AppState:', typeof AppState);
+        console.log('UI:', typeof UI);
+        console.log('SocketManager:', typeof SocketManager);
+        console.log('Features:', typeof Features);
+        console.log('UploadModal:', typeof UploadModal);
+        console.log('ChatHistory:', typeof ChatHistory);
+        console.log('Namespaces:', typeof Namespaces);
+        console.log('========================');
+    </script>
 </body>
 </html>
