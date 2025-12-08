@@ -349,7 +349,10 @@
             try {
                 console.log('Checking GitHub connection...');
                 const response = await fetch(`${BACKEND_URL}/github/repos`, {
-                    credentials: 'include'
+                    credentials: 'include',  // ✅ CRITICAL: Include credentials
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
                 });
                 
                 console.log('GitHub check response:', response.status);
@@ -373,7 +376,9 @@
         async function connectGitHub() {
             try {
                 console.log('Starting GitHub OAuth...');
-                const response = await fetch(`${BACKEND_URL}/github/oauth/authorize`);
+                const response = await fetch(`${BACKEND_URL}/github/oauth/authorize`, {
+                    credentials: 'include'  // ✅ Include credentials
+                });
                 
                 if (!response.ok) {
                     throw new Error(`OAuth start failed: ${response.statusText}`);
@@ -391,7 +396,7 @@
             try {
                 console.log('Loading GitHub repos...');
                 const response = await fetch(`${BACKEND_URL}/github/repos`, {
-                    credentials: 'include'
+                    credentials: 'include'  // ✅ Include credentials
                 });
                 
                 if (!response.ok) {
@@ -431,10 +436,12 @@
             try {
                 console.log('Loading indexed repos...');
                 const response = await fetch(`${BACKEND_URL}/github/repos/indexed`, {
-                    credentials: 'include'
+                    credentials: 'include'  // ✅ CRITICAL: Include credentials
                 });
                 
                 if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('Load indexed repos failed:', response.status, errorText);
                     throw new Error(`Failed to load indexed repos: ${response.statusText}`);
                 }
                 
@@ -495,7 +502,7 @@
                 const response = await fetch(`${BACKEND_URL}/github/repos/index`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    credentials: 'include',
+                    credentials: 'include',  // ✅ Include credentials
                     body: JSON.stringify({
                         owner,
                         repo,
@@ -524,7 +531,7 @@
                 console.log('Deleting repo:', repoId);
                 const response = await fetch(`${BACKEND_URL}/github/repos/${repoId}`, {
                     method: 'DELETE',
-                    credentials: 'include'
+                    credentials: 'include'  // ✅ Include credentials
                 });
                 
                 if (response.ok) {
