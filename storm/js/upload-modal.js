@@ -258,6 +258,21 @@ const UploadModal = {
         
         UI.addSystemMessage('GitHub repo detached from this session.');
     },
+
+    attachGithubRepo(repo) {
+        // Store in session state
+        AppState.currentGithubRepo = repo;
+        
+        console.log('🔗 Attached GitHub repo:', repo);  // ADD THIS
+        console.log('   - Repo ID:', repo.id);           // ADD THIS
+        console.log('   - Full name:', repo.full_name);  // ADD THIS
+        
+        // Show indicator in UI
+        this.showGithubRepoIndicator(repo);
+        
+        // Send system message
+        UI.addSystemMessage(`📂 GitHub repo attached: **${repo.full_name}**\n\nI now have full access to this codebase. Ask me anything about the code!`);
+    },
     
     async uploadLocalFiles() {
         // Add files to AppState for next message
