@@ -243,9 +243,21 @@
             color: rgba(255, 255, 255, 0.8);
             font-size: 0.85rem;
         }
+
+        .error-message {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            color: white;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-top: 1rem;
+        }
     </style>
 </head>
 <body>
+    <!-- CRITICAL: Load config FIRST -->
+    <script src="js/config.js"></script>
+
     <div class="container">
         <header class="glass">
             <div>
@@ -264,11 +276,13 @@
             </div>
         </header>
         
+        <div id="error-container"></div>
+        
         <!-- Indexed Repos -->
         <div class="section glass" id="indexed-section">
             <h2 style="color: white; margin-bottom: 1rem;">📂 Indexed Repositories</h2>
             <div class="indexed-list" id="indexed-list">
-                <p style="color: rgba(255,255,255,0.7);">No repositories indexed yet.</p>
+                <p style="color: rgba(255,255,255,0.7);">Loading...</p>
             </div>
         </div>
         
@@ -306,11 +320,24 @@
     </div>
     
     <script>
-        const BACKEND_URL = 'https://storm-backend-wqd0.onrender.com';
+        // CRITICAL: Use CONFIG instead of hardcoded URL
+        const BACKEND_URL = CONFIG.BACKEND_URL;
+        
         let selectedRepo = null;
         let isConnected = false;
         
+        function showError(message) {
+            const container = document.getElementById('error-container');
+            container.innerHTML = `
+                <div class="error-message glass">
+                    <strong>Error:</strong> ${message}
+                </div>
+            `;
+            console.error('GitHub Error:', message);
+        }
+        
         document.addEventListener('DOMContentLoaded', () => {
+            console.log('GitHub page loaded, using backend:', BACKEND_URL);
             checkConnection();
             loadIndexedRepos();
             
@@ -320,32 +347,59 @@
         
         async function checkConnection() {
             try {
-                const response = await fetch(`${BACKEND_URL}/github/repos`);
+                console.log('Checking GitHub connection...');
+                const response = await fetch(`${BACKEND_URL}/github/repos`, {
+                    credentials: 'include'
+                });
+                
+                console.log('GitHub check response:', response.status);
+                
                 if (response.ok) {
                     isConnected = true;
                     document.getElementById('connect-github-btn').textContent = '✓ Connected';
                     document.getElementById('connect-github-btn').style.background = '#10b981';
                     loadRepos();
+                } else if (response.status === 401) {
+                    console.log('Not authenticated with GitHub');
+                } else {
+                    const error = await response.json();
+                    showError(`GitHub check failed: ${error.error || response.statusText}`);
                 }
             } catch (error) {
-                console.log('Not connected to GitHub');
+                console.log('GitHub not connected:', error);
             }
         }
         
         async function connectGitHub() {
             try {
+                console.log('Starting GitHub OAuth...');
                 const response = await fetch(`${BACKEND_URL}/github/oauth/authorize`);
+                
+                if (!response.ok) {
+                    throw new Error(`OAuth start failed: ${response.statusText}`);
+                }
+                
                 const data = await response.json();
+                console.log('Redirecting to:', data.auth_url);
                 window.location.href = data.auth_url;
             } catch (error) {
-                alert('Failed to start GitHub OAuth: ' + error.message);
+                showError('Failed to start GitHub OAuth: ' + error.message);
             }
         }
         
         async function loadRepos() {
             try {
-                const response = await fetch(`${BACKEND_URL}/github/repos`);
+                console.log('Loading GitHub repos...');
+                const response = await fetch(`${BACKEND_URL}/github/repos`, {
+                    credentials: 'include'
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Failed to load repos: ${response.statusText}`);
+                }
+                
                 const data = await response.json();
+                console.log('Loaded repos:', data.repos.length);
                 
                 const grid = document.getElementById('repos-grid');
                 grid.innerHTML = '';
@@ -369,14 +423,23 @@
                 
                 document.getElementById('repos-section').style.display = 'block';
             } catch (error) {
-                console.error('Failed to load repos:', error);
+                showError('Failed to load repositories: ' + error.message);
             }
         }
         
         async function loadIndexedRepos() {
             try {
-                const response = await fetch(`${BACKEND_URL}/github/repos/indexed`);
+                console.log('Loading indexed repos...');
+                const response = await fetch(`${BACKEND_URL}/github/repos/indexed`, {
+                    credentials: 'include'
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Failed to load indexed repos: ${response.statusText}`);
+                }
+                
                 const data = await response.json();
+                console.log('Indexed repos:', data.repos.length);
                 
                 const list = document.getElementById('indexed-list');
                 list.innerHTML = '';
@@ -404,7 +467,7 @@
                     list.appendChild(item);
                 });
             } catch (error) {
-                console.error('Failed to load indexed repos:', error);
+                showError('Failed to load indexed repos: ' + error.message);
             }
         }
         
@@ -428,9 +491,11 @@
             const [owner, repo] = selectedRepo.full_name.split('/');
             
             try {
+                console.log('Starting indexing:', owner, repo);
                 const response = await fetch(`${BACKEND_URL}/github/repos/index`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
+                    credentials: 'include',
                     body: JSON.stringify({
                         owner,
                         repo,
@@ -445,10 +510,10 @@
                     alert('Indexing started! This may take a few minutes.');
                     setTimeout(loadIndexedRepos, 2000);
                 } else {
-                    alert('Indexing failed: ' + data.error);
+                    throw new Error(data.error || 'Indexing failed');
                 }
             } catch (error) {
-                alert('Error: ' + error.message);
+                showError('Indexing error: ' + error.message);
             }
         }
         
@@ -456,15 +521,19 @@
             if (!confirm('Remove this repository from your knowledge base?')) return;
             
             try {
+                console.log('Deleting repo:', repoId);
                 const response = await fetch(`${BACKEND_URL}/github/repos/${repoId}`, {
-                    method: 'DELETE'
+                    method: 'DELETE',
+                    credentials: 'include'
                 });
                 
                 if (response.ok) {
                     loadIndexedRepos();
+                } else {
+                    throw new Error('Delete failed: ' + response.statusText);
                 }
             } catch (error) {
-                alert('Failed to delete: ' + error.message);
+                showError('Failed to delete: ' + error.message);
             }
         }
     </script>
